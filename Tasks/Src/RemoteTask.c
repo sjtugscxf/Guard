@@ -124,7 +124,7 @@ void RemoteDataProcess(uint8_t *pData)
 
 	//输入状态设置
 	if(RC_CtrlData.rc.s2 == 1) inputmode = REMOTE_INPUT; 
-	else if(RC_CtrlData.rc.s2 == 3) inputmode = KEY_MOUSE_INPUT; 
+	else if(RC_CtrlData.rc.s2 == 3) inputmode = AUTO; 
 	else inputmode = STOP; 
 	
 	/*左上角拨杆状态（RC_CtrlData.rc.s1）获取*/	//用于遥控器发射控制
@@ -139,7 +139,7 @@ void RemoteDataProcess(uint8_t *pData)
 				RemoteControlProcess(&(RC_CtrlData.rc));
 			}
 		}break;
-		case KEY_MOUSE_INPUT:              
+		case AUTO:              
 		{
 			if(WorkState == NORMAL_STATE)
 			{ 

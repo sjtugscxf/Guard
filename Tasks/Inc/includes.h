@@ -26,7 +26,7 @@
 #include "IMUTask.h"
 #include "CANTask.h"
 #include "pid_regulator.h"
-#include "ShootTask.h"
 #include "drivers_ramp.h"
+#include "ShootTask.h"
 
 #endif /* __INCLUDES_H */

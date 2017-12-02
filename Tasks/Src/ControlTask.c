@@ -11,6 +11,7 @@
   */
 #include "includes.h"
 
+uint8_t find_enemy = 0;
 WorkState_e WorkState = PREPARE_STATE;
 uint16_t prepare_time = 0;
 
@@ -60,24 +61,56 @@ void WorkStateFSM(void)
 	{
 		case PREPARE_STATE:
 		{
-			if (inputmode == STOP) WorkState = STOP_STATE;
-			
 			if(prepare_time<2000) prepare_time++;
 			if(prepare_time == 2000)//开机两秒进入正常模式
 			{
 				WorkState = NORMAL_STATE;
 				prepare_time = 0;
 			}
+			
+			if (inputmode == STOP) WorkState = STOP_STATE;
 		}break;
 		case NORMAL_STATE:
 		{
 			if (inputmode == STOP) WorkState = STOP_STATE;
+			else if (inputmode == AUTO)
+			{
+				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				if(frictionRamp.IsOverflow(&frictionRamp))
+				{
+					WorkState = DEFEND_STATE;
+				}
+			}
+		}break;
+		case DEFEND_STATE:
+		{
+			if (find_enemy == 1) WorkState = ATTACK_STATE;
+			
+			if (inputmode == STOP) WorkState = STOP_STATE;
+			else if (inputmode == REMOTE_INPUT)
+			{
+				SetFrictionWheelSpeed(1000); 
+				frictionRamp.ResetCounter(&frictionRamp);
+				WorkState = NORMAL_STATE;
+			}
+		}break;
+		case ATTACK_STATE:
+		{
+			if (find_enemy == 1) WorkState = DEFEND_STATE;
+			
+			if (inputmode == STOP) WorkState = STOP_STATE;
+			else if (inputmode == REMOTE_INPUT)
+			{
+				SetFrictionWheelSpeed(1000); 
+				frictionRamp.ResetCounter(&frictionRamp);
+				WorkState = NORMAL_STATE;
+			}
 		}break;
 		case STOP_STATE://紧急停止
 		{
 			if (inputmode == REMOTE_INPUT)
 			{
-				WorkState = PREPARE_STATE;
+				WorkState = NORMAL_STATE;
 				RemoteTaskInit();
 			}
 		}break;

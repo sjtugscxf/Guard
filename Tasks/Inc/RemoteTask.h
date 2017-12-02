@@ -89,7 +89,7 @@ typedef __packed struct
 typedef enum
 {
 	REMOTE_INPUT = 1,
-	KEY_MOUSE_INPUT = 3,
+	AUTO = 3,
 	STOP = 2,
 }InputMode_e;
 

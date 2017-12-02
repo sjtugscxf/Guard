@@ -64,7 +64,9 @@
 typedef enum
 {
 	PREPARE_STATE,     	
-	NORMAL_STATE,		    
+	NORMAL_STATE,		  
+  DEFEND_STATE,
+  ATTACK_STATE,  
 	STOP_STATE        
 }WorkState_e;
 
