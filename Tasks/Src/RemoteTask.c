@@ -21,7 +21,7 @@ extern RampGen_t frictionRamp ;  //摩擦轮斜坡
 extern RampGen_t LRSpeedRamp ;   //键盘速度斜坡
 extern RampGen_t FBSpeedRamp  ;   
 
-float yawAngleTarget = 0.0;
+float yawSpeedTarget = 0.0;
 float pitchAngleTarget = 0.0;
 
 //遥控器控制量初始化
@@ -30,7 +30,7 @@ void RemoteTaskInit()
 	frictionRamp.SetScale(&frictionRamp, FRICTION_RAMP_TICK_COUNT);
 	frictionRamp.ResetCounter(&frictionRamp);
 	
-	yawAngleTarget = 0.0;
+	yawSpeedTarget = 0.0;
 	pitchAngleTarget = 0.0;
 	/*底盘速度初始化*/
 	ChassisSpeedRef.forward_back_ref = 0.0f;
@@ -46,7 +46,7 @@ void RemoteControlProcess(Remote *rc)
 		ChassisSpeedRef.forward_back_ref = (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
 		
 		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		yawAngleTarget   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT; 
+		yawSpeedTarget = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_SPEED_INC_FACT; 
 	}
 	RemoteShootControl(&g_switch1, rc->s1);
 }
@@ -141,10 +141,7 @@ void RemoteDataProcess(uint8_t *pData)
 		}break;
 		case AUTO:              
 		{
-			if(WorkState == NORMAL_STATE)
-			{ 
-				
-			}
+			
 		}break;
 		case STOP:               
 		{

@@ -19,7 +19,7 @@
 
 #define STICK_TO_CHASSIS_SPEED_REF_FACT     2.f
 #define STICK_TO_PITCH_ANGLE_INC_FACT       0.008f
-#define STICK_TO_YAW_ANGLE_INC_FACT         0.005f
+#define STICK_TO_YAW_SPEED_INC_FACT         0.01f
 
 //遥感常量数据区
 #define REMOTE_CONTROLLER_STICK_OFFSET  1024u  
@@ -122,7 +122,7 @@ typedef __packed enum
 
 extern ChassisSpeed_Ref_t ChassisSpeedRef; 
 extern InputMode_e inputmode;
-extern float yawAngleTarget;
+extern float yawSpeedTarget;
 extern float pitchAngleTarget;
 
 void InitRemoteControl();

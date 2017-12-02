@@ -197,19 +197,9 @@ float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
 
 //控制云台YAW轴
-void ControlYaw(void)
-{
-	uint16_t yawZeroAngle = yaw_zero;
-			
-	yawRealAngle = (GMYAWRx.angle - yawZeroAngle) * 360 / 8192.0f;
-	NORMALIZE_ANGLE180(yawRealAngle);
-			
-	if(WorkState == NORMAL_STATE) 
-	{
-		//yawRealAngle = -ZGyroModuleAngle;
-	}
-							
-	yawIntensity = ProcessYawPID(yawAngleTarget, yawRealAngle, -gYroZs);
+void ControlYawSpeed(void)
+{		
+	yawIntensity = ProcessYawPID(yawSpeedTarget,-gYroZs);
 }
 
 //控制云台pitch轴
@@ -230,16 +220,24 @@ void controlLoop()
 {
 	WorkStateFSM();
 	
-	if(WorkState != STOP_STATE)
+	if(WorkState == DEFEND_STATE)
 	{
-		ControlYaw();
-		ControlPitch();
 		
+	}
+	
+	if(WorkState == ATTACK_STATE)
+	{
+		
+	}
+	
+	if(WorkState != STOP_STATE) 
+	{
+		ControlYawSpeed();
+		ControlPitch();
 		setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
-		
 		//setCMMotor();
 	}
 }
