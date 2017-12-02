@@ -168,6 +168,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 	}
 	else if(UartHandle == &MANIFOLD_UART)
 	{
-		manifoldUartRxCpltCallback();
+		manifoldUartRxCpltCallback();  //妙算信号数据解算
 	}
 }   

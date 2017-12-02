@@ -73,7 +73,7 @@ void WorkStateFSM(void)
 			
 			if (inputmode == STOP) WorkState = STOP_STATE;
 		}break;
-		case NORMAL_STATE:
+		case NORMAL_STATE://正常遥控调试模式
 		{
 			if (inputmode == STOP) WorkState = STOP_STATE;
 			else if (inputmode == AUTO)
@@ -81,11 +81,11 @@ void WorkStateFSM(void)
 				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
 				if(frictionRamp.IsOverflow(&frictionRamp))
 				{
-					WorkState = DEFEND_STATE;
+					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
 				}
 			}
 		}break;
-		case DEFEND_STATE:
+		case DEFEND_STATE:  //防御模式，云台360度旋转
 		{
 			if (find_enemy == 1) WorkState = ATTACK_STATE;
 			
@@ -97,7 +97,7 @@ void WorkStateFSM(void)
 				WorkState = NORMAL_STATE;
 			}
 		}break;
-		case ATTACK_STATE:
+		case ATTACK_STATE:  //自动打击模式
 		{
 			if (find_enemy == 1) WorkState = DEFEND_STATE;
 			
@@ -144,6 +144,7 @@ void setCMMotor()
 	//CAN通信前关中断
 	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_DisableIRQ(USART1_IRQn);
+	HAL_NVIC_DisableIRQ(USART3_IRQn);
 	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
 	if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
 	{
@@ -152,6 +153,7 @@ void setCMMotor()
 	//CAN通信后开中断，防止中断影响CAN信号发送
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
+	HAL_NVIC_EnableIRQ(USART3_IRQn);
 	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
 
@@ -178,6 +180,7 @@ void setGMMotor()
 
 	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_DisableIRQ(USART1_IRQn);
+	HAL_NVIC_DisableIRQ(USART3_IRQn);
 	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
 	if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
 	{
@@ -185,6 +188,7 @@ void setGMMotor()
 	}
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
+	HAL_NVIC_EnableIRQ(USART3_IRQn);
 	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
 

@@ -18,7 +18,7 @@ RampGen_t FBSpeedRamp = RAMP_GEN_DAFAULT;
 uint16_t remoteShootDelay = 500;
 static uint32_t RotateCNT = 0;	//长按连发计数
 static uint16_t CNT_1s = 75;		//用于避免四连发模式下两秒内连射8发过于密集的情况
-static uint16_t CNT_250ms = 18;	//???????????
+static uint16_t CNT_250ms = 18;	
 
 
 void InitUserTimer(void)
@@ -34,6 +34,7 @@ void SetFrictionWheelSpeed(uint16_t x)
 	__HAL_TIM_SET_COMPARE(&FRICTION_TIM, TIM_CHANNEL_2, x);
 }
 	
+//遥控器开启摩擦轮
 void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val) 
 {
 	switch(FrictionWheelState)

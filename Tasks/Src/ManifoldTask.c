@@ -17,7 +17,7 @@ uint8_t auto_received = 0;
 uint8_t auto_buffer[7] = {0}; 
 uint8_t auto_buffercnt = 0;
 
-void manifoldUartRxCpltCallback() //参照裁判系统读取的方法
+void manifoldUartRxCpltCallback() //妙算自动打击通信数据处理
 {
 	if(auto_receiving) 
 		{

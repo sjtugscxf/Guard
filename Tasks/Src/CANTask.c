@@ -46,6 +46,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 	HAL_NVIC_DisableIRQ(CAN1_TX_IRQn);
 	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_DisableIRQ(USART1_IRQn);
+	HAL_NVIC_DisableIRQ(USART3_IRQn);
 	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
 	if(hcan == &CMGMMOTOR_CAN){//CAN1数据
 		switch(CMGMCanRxMsg.StdId){
@@ -80,5 +81,6 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 	HAL_NVIC_EnableIRQ(CAN1_TX_IRQn);
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
+	HAL_NVIC_EnableIRQ(USART3_IRQn);
 	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
