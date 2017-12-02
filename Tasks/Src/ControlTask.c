@@ -240,7 +240,19 @@ void controlLoop()
 	
 	if(WorkState == ATTACK_STATE)
 	{
+		static float enemy_yaw_err_last = 0;
+		float enemy_yaw_err = (float)((int16_t)YAW_OFFSET - enemy_yaw);
+		float enemy_yaw_out = enemy_yaw_err/1000 * fabs(enemy_yaw_err)  * AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
+		if (enemy_yaw_out>2) enemy_yaw_out = 2;
+		else if (enemy_yaw_out<-2) enemy_yaw_out = -2;
+		yawSpeedTarget = enemy_yaw_out;
 		
+		static float enemy_pitch_err_last = 0;
+		float enemy_pitch_err = (float)((int16_t)PITCH_OFFSET - enemy_pitch);
+		float enemy_pitch_out = enemy_pitch_err/1000 * fabs(enemy_pitch_err) * AUTO_ATTACK_PITCH_KP + (enemy_pitch_err - enemy_pitch_err_last)*AUTO_ATTACK_PITCH_KD;
+		if (enemy_pitch_out>1) enemy_pitch_out = 1;
+		else if (enemy_pitch_out<-1) enemy_pitch_out = -1;
+		pitchAngleTarget -= enemy_pitch_out;
 	}
 	
 	if(WorkState != STOP_STATE) 

@@ -14,6 +14,10 @@
 
 #include "includes.h"
 
+#define AUTO_ATTACK_YAW_KP      0.015f * 0.005f
+#define AUTO_ATTACK_YAW_KD      0 
+#define AUTO_ATTACK_PITCH_KP      0.015f * 0.005f
+#define AUTO_ATTACK_PITCH_KD      0 
 #define YAW_OFFSET         8000u  
 #define PITCH_OFFSET       3500u  
 #define CHASSIS_SPEED_ATTENUATION   (1.30f)
