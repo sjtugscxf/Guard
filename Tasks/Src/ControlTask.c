@@ -17,10 +17,8 @@ uint16_t prepare_time = 0;
 PID_Regulator_t CMRotatePID = CHASSIS_MOTOR_ROTATE_PID_DEFAULT; 
 PID_Regulator_t CM1SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t CM2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
-PID_Regulator_t CM3SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
-PID_Regulator_t CM4SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 
-int16_t CMFLIntensity = 0, CMFRIntensity = 0, CMBLIntensity = 0, CMBRIntensity = 0;
+int16_t CMFLIntensity = 0, CMFRIntensity = 0;
 int16_t yawIntensity = 0;		
 int16_t pitchIntensity = 0;
 
@@ -30,16 +28,12 @@ void CMControlInit(void)
 	CMRotatePID.Reset(&CMRotatePID);
 	CM1SpeedPID.Reset(&CM1SpeedPID);
 	CM2SpeedPID.Reset(&CM2SpeedPID);
-	CM3SpeedPID.Reset(&CM3SpeedPID);
-	CM4SpeedPID.Reset(&CM4SpeedPID);
 }
 
 //单个底盘电机的控制，下同
 void ControlCMFL(void)
 {		
-	CM1SpeedPID.ref =  ChassisSpeedRef.forward_back_ref*0.075 
-										 + ChassisSpeedRef.left_right_ref*0.075 
-										 + ChassisSpeedRef.rotate_ref;	
+	CM1SpeedPID.ref =  ChassisSpeedRef.forward_back_ref*0.075;
 	CM1SpeedPID.ref = 160 * CM1SpeedPID.ref;	
 			
 	CM1SpeedPID.fdb = CMFLRx.RotateSpeed;
@@ -50,41 +44,13 @@ void ControlCMFL(void)
 
 void ControlCMFR(void)
 {		
-	CM2SpeedPID.ref = - ChassisSpeedRef.forward_back_ref*0.075 
-									 + ChassisSpeedRef.left_right_ref*0.075 
-									 + ChassisSpeedRef.rotate_ref;
+	CM2SpeedPID.ref = - ChassisSpeedRef.forward_back_ref*0.075;
 	CM2SpeedPID.ref = 160 * CM2SpeedPID.ref;	
 			
 	CM2SpeedPID.fdb = CMFRRx.RotateSpeed;
 
 	CM2SpeedPID.Calc(&CM2SpeedPID);
 	CMFRIntensity = CHASSIS_SPEED_ATTENUATION * CM2SpeedPID.output;
-}
-
-void ControlCMBL(void)
-{				
-	CM3SpeedPID.ref =  ChassisSpeedRef.forward_back_ref*0.075 
-										 - ChassisSpeedRef.left_right_ref*0.075 
-										 + ChassisSpeedRef.rotate_ref;
-	CM3SpeedPID.ref = 160 * CM3SpeedPID.ref;	
-			
-	CM3SpeedPID.fdb = CMBLRx.RotateSpeed;
-
-	CM3SpeedPID.Calc(&CM3SpeedPID);
-	CMBLIntensity = CHASSIS_SPEED_ATTENUATION * CM3SpeedPID.output;
-}
-
-void ControlCMBR(void)
-{		
-	CM4SpeedPID.ref = - ChassisSpeedRef.forward_back_ref*0.075 
-										 - ChassisSpeedRef.left_right_ref*0.075 
-										 + ChassisSpeedRef.rotate_ref;
-	CM4SpeedPID.ref = 160 * CM4SpeedPID.ref;
-			
-	CM4SpeedPID.fdb = CMBRRx.RotateSpeed;
-
-	CM4SpeedPID.Calc(&CM4SpeedPID);
-	CMBRIntensity = CHASSIS_SPEED_ATTENUATION * CM4SpeedPID.output;
 }
 
 //状态机切换
@@ -96,9 +62,8 @@ void WorkStateFSM(void)
 		{
 			if (inputmode == STOP) WorkState = STOP_STATE;
 			
-			if(prepare_time<5000) prepare_time++;
-			if(prepare_time == 3000) GYRO_RST();//开机三秒复位陀螺仪
-			if(prepare_time == 5000)//开机五秒进入正常模式
+			if(prepare_time<2000) prepare_time++;
+			if(prepare_time == 2000)//开机两秒进入正常模式
 			{
 				WorkState = NORMAL_STATE;
 				prepare_time = 0;
@@ -135,14 +100,13 @@ void setCMMotor()
 	CMGMMOTOR_CAN.pTxMsg->Data[1] = (uint8_t)CMFLIntensity;
 	CMGMMOTOR_CAN.pTxMsg->Data[2] = (uint8_t)(CMFRIntensity >> 8);
 	CMGMMOTOR_CAN.pTxMsg->Data[3] = (uint8_t)CMFRIntensity;
-	CMGMMOTOR_CAN.pTxMsg->Data[4] = (uint8_t)(CMBLIntensity >> 8);
-	CMGMMOTOR_CAN.pTxMsg->Data[5] = (uint8_t)CMBLIntensity;
-	CMGMMOTOR_CAN.pTxMsg->Data[6] = (uint8_t)(CMBRIntensity >> 8);
-	CMGMMOTOR_CAN.pTxMsg->Data[7] = (uint8_t)CMBRIntensity;
+	CMGMMOTOR_CAN.pTxMsg->Data[4] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[5] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[6] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[7] = 0x00;
 
 	//CAN通信前关中断
 	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
 	HAL_NVIC_DisableIRQ(USART1_IRQn);
 	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
 	if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
@@ -151,7 +115,6 @@ void setCMMotor()
 	}
 	//CAN通信后开中断，防止中断影响CAN信号发送
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
@@ -178,7 +141,6 @@ void setGMMotor()
 	CMGMMOTOR_CAN.pTxMsg->Data[7] = 0;
 
 	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_DisableIRQ(CAN2_RX0_IRQn);
 	HAL_NVIC_DisableIRQ(USART1_IRQn);
 	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
 	if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
@@ -186,7 +148,6 @@ void setGMMotor()
 		Error_Handler();
 	}
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_EnableIRQ(CAN2_RX0_IRQn);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
@@ -201,20 +162,6 @@ fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 5, 10000.0, 10000.0, 100
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
-//底盘跟随云台旋转控制
-void ControlRotate(void)
-{
-	gap_angle  = (GMYAWRx.angle - yaw_zero) * 360 / 8192.0f;
-  NORMALIZE_ANGLE180(gap_angle);	
-	
-	if(WorkState == NORMAL_STATE) 
-	{
-		CMRotatePID.ref = 0;
-		CMRotatePID.fdb = gap_angle;
-		CMRotatePID.Calc(&CMRotatePID);   
-		ChassisSpeedRef.rotate_ref = CMRotatePID.output;
-	}
-}
 
 //控制云台YAW轴
 void ControlYaw(void)
@@ -226,12 +173,10 @@ void ControlYaw(void)
 			
 	if(WorkState == NORMAL_STATE) 
 	{
-		yawRealAngle = -ZGyroModuleAngle;
+		//yawRealAngle = -ZGyroModuleAngle;
 	}
 							
 	yawIntensity = ProcessYawPID(yawAngleTarget, yawRealAngle, -gYroZs);
-			
-	ControlRotate();
 }
 
 //控制云台pitch轴
@@ -259,12 +204,10 @@ void controlLoop()
 		
 		setGMMotor();
 		
-		ControlCMFL();
-		ControlCMFR();
-		//ControlCMBL();
-		//ControlCMBR();
+		//ControlCMFL();
+		//ControlCMFR();
 		
-		setCMMotor();
+		//setCMMotor();
 	}
 }
 

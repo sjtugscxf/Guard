@@ -32,7 +32,6 @@ typedef __packed enum
 }Shoot_State_e;
 
 void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val);
-void MouseShootControl(Mouse *mouse);
 void InitUserTimer(void);
 						
 #endif /* __SHOOTTASK_H */

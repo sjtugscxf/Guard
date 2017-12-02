@@ -28,18 +28,12 @@ float pitchAngleTarget = 0.0;
 void RemoteTaskInit()
 {
 	frictionRamp.SetScale(&frictionRamp, FRICTION_RAMP_TICK_COUNT);
-	LRSpeedRamp.SetScale(&LRSpeedRamp, MOUSE_LR_RAMP_TICK_COUNT);
-	FBSpeedRamp.SetScale(&FBSpeedRamp, MOUSR_FB_RAMP_TICK_COUNT);
 	frictionRamp.ResetCounter(&frictionRamp);
-	LRSpeedRamp.ResetCounter(&LRSpeedRamp);
-	FBSpeedRamp.ResetCounter(&FBSpeedRamp);
 	
 	yawAngleTarget = 0.0;
 	pitchAngleTarget = 0.0;
 	/*底盘速度初始化*/
 	ChassisSpeedRef.forward_back_ref = 0.0f;
-	ChassisSpeedRef.left_right_ref = 0.0f;
-	ChassisSpeedRef.rotate_ref = 0.0f;
 	/*摩擦轮*/
 	FrictionWheelState = FRICTION_WHEEL_OFF;
 }
@@ -50,125 +44,12 @@ void RemoteControlProcess(Remote *rc)
 	if(WorkState == NORMAL_STATE)
 	{
 		ChassisSpeedRef.forward_back_ref = (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
-		ChassisSpeedRef.left_right_ref   = (rc->ch0 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT; 
 		
 		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
 		yawAngleTarget   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT; 
 	}
 	RemoteShootControl(&g_switch1, rc->s1);
 }
-
-//键鼠控制量解算
-void MouseKeyControlProcess(Mouse *mouse, Key *key)
-{
-	static uint16_t forward_back_speed = 0;
-	static uint16_t left_right_speed = 0;
-	if(WorkState == NORMAL_STATE)
-	{
-		VAL_LIMIT(mouse->x, -150, 150); 
-		VAL_LIMIT(mouse->y, -150, 150); 
-	
-		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  
-		yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
-
-		//speed mode: normal speed/high speed 
-		if(key->v & 0x10)//Shift
-		{
-			forward_back_speed =  LOW_FORWARD_BACK_SPEED;
-			left_right_speed = LOW_LEFT_RIGHT_SPEED;
-		}
-		else if(key->v == 32)//Ctrl
-		{
-			forward_back_speed =  MIDDLE_FORWARD_BACK_SPEED;
-			left_right_speed = MIDDLE_LEFT_RIGHT_SPEED;
-		}
-		else
-		{
-			forward_back_speed =  NORMAL_FORWARD_BACK_SPEED;
-			left_right_speed = NORMAL_LEFT_RIGHT_SPEED;
-		}
-		//movement process
-		if(key->v & 0x01)  // key: w
-		{
-			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			
-		}
-		else if(key->v & 0x02) //key: s
-		{
-			ChassisSpeedRef.forward_back_ref = -forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			
-		}
-		else
-		{
-			ChassisSpeedRef.forward_back_ref = 0;
-			FBSpeedRamp.ResetCounter(&FBSpeedRamp);
-		}
-		if(key->v & 0x04)  // key: d
-		{
-			ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
-			
-		}
-		else if(key->v & 0x08) //key: a
-		{
-			ChassisSpeedRef.left_right_ref = left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
-			
-		}
-		else
-		{
-			ChassisSpeedRef.left_right_ref = 0;
-			LRSpeedRamp.ResetCounter(&LRSpeedRamp);
-		}
-
-		/*裁判系统离线时的功率限制方式*/
-		if(JUDGE_State == OFFLINE)
-		{
-			if(abs(ChassisSpeedRef.forward_back_ref) + abs(ChassisSpeedRef.left_right_ref) > 500)
-			{
-				if(ChassisSpeedRef.forward_back_ref > 325)
-				{
-				ChassisSpeedRef.forward_back_ref =  325 +  (ChassisSpeedRef.forward_back_ref - 325) * 0.15f;
-				}
-				else if(ChassisSpeedRef.forward_back_ref < -325)
-				{
-				ChassisSpeedRef.forward_back_ref =  -325 +  (ChassisSpeedRef.forward_back_ref + 325) * 0.15f;
-				}
-				if(ChassisSpeedRef.left_right_ref > 300)
-				{
-				ChassisSpeedRef.left_right_ref =  300 +  (ChassisSpeedRef.left_right_ref - 300) * 0.15f;
-				}
-				else if(ChassisSpeedRef.left_right_ref < -300)
-				{
-				ChassisSpeedRef.left_right_ref =  -300 +  (ChassisSpeedRef.left_right_ref + 300) * 0.15f;
-				}
-			}
-
-			if ((mouse->x < -2.6) || (mouse->x > 2.6))
-			{
-				if(abs(ChassisSpeedRef.forward_back_ref) + abs(ChassisSpeedRef.left_right_ref) > 400)
-				{
-					if(ChassisSpeedRef.forward_back_ref > 250){
-					 ChassisSpeedRef.forward_back_ref =  250 +  (ChassisSpeedRef.forward_back_ref - 250) * 0.15f;
-					}
-					else if(ChassisSpeedRef.forward_back_ref < -250)
-					{
-						ChassisSpeedRef.forward_back_ref =  -250 +  (ChassisSpeedRef.forward_back_ref + 250) * 0.15f;
-					}
-					if(ChassisSpeedRef.left_right_ref > 250)
-					{
-					 ChassisSpeedRef.left_right_ref =  250 +  (ChassisSpeedRef.left_right_ref - 250) * 0.15f;
-					}
-					else if(ChassisSpeedRef.left_right_ref < -250)
-					{
-						ChassisSpeedRef.left_right_ref =  -250 +  (ChassisSpeedRef.left_right_ref + 250) * 0.15f;
-					}
-				}
-			}
-		}
-		
-		MouseShootControl(mouse);
-	}
-}
-
 
 /*拨杆数据处理*/   
 void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val)
@@ -262,7 +143,7 @@ void RemoteDataProcess(uint8_t *pData)
 		{
 			if(WorkState == NORMAL_STATE)
 			{ 
-				MouseKeyControlProcess(&RC_CtrlData.mouse,&RC_CtrlData.key);
+				
 			}
 		}break;
 		case STOP:               

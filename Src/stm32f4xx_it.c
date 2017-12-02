@@ -41,7 +41,6 @@
 
 /* External variables --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
-extern CAN_HandleTypeDef hcan2;
 extern TIM_HandleTypeDef htim6;
 extern DMA_HandleTypeDef hdma_usart1_rx;
 extern UART_HandleTypeDef huart1;
@@ -256,34 +255,6 @@ void DMA2_Stream2_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
 
   /* USER CODE END DMA2_Stream2_IRQn 1 */
-}
-
-/**
-* @brief This function handles CAN2 TX interrupts.
-*/
-void CAN2_TX_IRQHandler(void)
-{
-  /* USER CODE BEGIN CAN2_TX_IRQn 0 */
-
-  /* USER CODE END CAN2_TX_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan2);
-  /* USER CODE BEGIN CAN2_TX_IRQn 1 */
-
-  /* USER CODE END CAN2_TX_IRQn 1 */
-}
-
-/**
-* @brief This function handles CAN2 RX0 interrupts.
-*/
-void CAN2_RX0_IRQHandler(void)
-{
-  /* USER CODE BEGIN CAN2_RX0_IRQn 0 */
-
-  /* USER CODE END CAN2_RX0_IRQn 0 */
-  HAL_CAN_IRQHandler(&hcan2);
-  /* USER CODE BEGIN CAN2_RX0_IRQn 1 */
-
-  /* USER CODE END CAN2_RX0_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

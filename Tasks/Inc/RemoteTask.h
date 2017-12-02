@@ -43,23 +43,6 @@
 
 #define REMOTE_SWITCH_VALUE_BUF_DEEP   16u
 
-//键鼠常量数据区
-#define MOUSE_TO_PITCH_ANGLE_INC_FACT 		0.025f * 3	//
-#define MOUSE_TO_YAW_ANGLE_INC_FACT 			0.025f * 3	//原代码中被注释掉了
-
-#define NORMAL_FORWARD_BACK_SPEED 			500
-#define NORMAL_LEFT_RIGHT_SPEED   			650
-#define HIGH_FORWARD_BACK_SPEED 			660
-#define HIGH_LEFT_RIGHT_SPEED   			800
-#define LOW_FORWARD_BACK_SPEED 			100
-#define LOW_LEFT_RIGHT_SPEED   			130
-#define MIDDLE_FORWARD_BACK_SPEED 			200
-#define MIDDLE_LEFT_RIGHT_SPEED   			220
-
-#define MOUSE_LR_RAMP_TICK_COUNT			50
-#define MOUSR_FB_RAMP_TICK_COUNT			60
-
-
 #define VAL_LIMIT(val, min, max)\
 if(val<=min)\
 {\
