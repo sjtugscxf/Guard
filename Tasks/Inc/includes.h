@@ -28,5 +28,6 @@
 #include "pid_regulator.h"
 #include "drivers_ramp.h"
 #include "ShootTask.h"
+#include "ManifoldTask.h"
 
 #endif /* __INCLUDES_H */

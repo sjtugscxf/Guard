@@ -15,7 +15,7 @@
 #include "includes.h"
 
 #define RC_UART huart1
-
+#define MANIFOLD_UART huart3
 
 #define STICK_TO_CHASSIS_SPEED_REF_FACT     2.f
 #define STICK_TO_PITCH_ANGLE_INC_FACT       0.008f

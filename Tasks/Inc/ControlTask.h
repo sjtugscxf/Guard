@@ -14,6 +14,8 @@
 
 #include "includes.h"
 
+#define YAW_OFFSET         8000u  
+#define PITCH_OFFSET       3500u  
 #define CHASSIS_SPEED_ATTENUATION   (1.30f)
 #define CHASSIS_MOTOR_ROTATE_PID_DEFAULT \
 {\
@@ -71,6 +73,10 @@ typedef enum
 }WorkState_e;
 
 extern WorkState_e WorkState;
+extern uint8_t find_enemy;
+extern uint16_t enemy_pitch;
+extern uint16_t enemy_yaw;
+extern uint16_t enemy_detect_cnt;
 
 void CMControlInit(void);
 

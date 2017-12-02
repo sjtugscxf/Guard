@@ -12,6 +12,9 @@
 #include "includes.h"
 
 uint8_t find_enemy = 0;
+uint16_t enemy_yaw = YAW_OFFSET;
+uint16_t enemy_pitch = PITCH_OFFSET;
+uint16_t enemy_detect_cnt = 0;
 WorkState_e WorkState = PREPARE_STATE;
 uint16_t prepare_time = 0;
 
@@ -218,11 +221,21 @@ void ControlPitch(void)
 //主控制循环
 void controlLoop()
 {
+	if(enemy_detect_cnt>2000)    //1s内没有刷新自动打击数据则回中
+	{
+		enemy_yaw = YAW_OFFSET;
+		enemy_pitch = PITCH_OFFSET;
+	}
+	else
+	{
+		enemy_detect_cnt++;
+	}
+	
 	WorkStateFSM();
 	
 	if(WorkState == DEFEND_STATE)
 	{
-		
+		yawSpeedTarget = 1.0;
 	}
 	
 	if(WorkState == ATTACK_STATE)

@@ -166,4 +166,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 		HAL_UART_AbortReceive(&RC_UART);
 		HAL_UART_Receive_DMA(&RC_UART, rc_data, 18);
 	}
+	else if(UartHandle == &MANIFOLD_UART)
+	{
+		manifoldUartRxCpltCallback();
+	}
 }   
