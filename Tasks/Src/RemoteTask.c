@@ -15,6 +15,7 @@ RC_Ctl_t RC_CtrlData;
 InputMode_e inputmode = REMOTE_INPUT; 
 JudgeState_e JUDGE_State = OFFLINE;	//这个应该声明为extern，本体声明写在裁判系统的Task中
 ChassisSpeed_Ref_t ChassisSpeedRef; 
+int16_t bullet_ref = 0;
 extern FrictionWheelState_e FrictionWheelState;
 RemoteSwitch_t g_switch1;
 extern RampGen_t frictionRamp ;  //摩擦轮斜坡
@@ -43,7 +44,7 @@ void RemoteControlProcess(Remote *rc)
 {
 	if(WorkState == NORMAL_STATE)
 	{
-		ChassisSpeedRef.forward_back_ref = (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
+		bullet_ref = (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
 		
 		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
 		yawSpeedTarget = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_SPEED_INC_FACT; 

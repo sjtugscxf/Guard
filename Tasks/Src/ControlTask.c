@@ -21,8 +21,9 @@ uint16_t prepare_time = 0;
 PID_Regulator_t CMRotatePID = CHASSIS_MOTOR_ROTATE_PID_DEFAULT; 
 PID_Regulator_t CM1SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t CM2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
+PID_Regulator_t BulletSpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 
-int16_t CMFLIntensity = 0, CMFRIntensity = 0;
+int16_t CMFLIntensity = 0, CMFRIntensity = 0, BulletIntensity = 0;
 int16_t yawIntensity = 0;		
 int16_t pitchIntensity = 0;
 
@@ -32,6 +33,7 @@ void CMControlInit(void)
 	CMRotatePID.Reset(&CMRotatePID);
 	CM1SpeedPID.Reset(&CM1SpeedPID);
 	CM2SpeedPID.Reset(&CM2SpeedPID);
+	BulletSpeedPID.Reset(&BulletSpeedPID);
 }
 
 //单个底盘电机的控制，下同
@@ -55,6 +57,17 @@ void ControlCMFR(void)
 
 	CM2SpeedPID.Calc(&CM2SpeedPID);
 	CMFRIntensity = CHASSIS_SPEED_ATTENUATION * CM2SpeedPID.output;
+}
+
+void ControlBullet(void)
+{		
+	BulletSpeedPID.ref = bullet_ref*0.075;
+	BulletSpeedPID.ref = 160 * BulletSpeedPID.ref;	
+			
+	BulletSpeedPID.fdb = BulletRx.RotateSpeed;
+
+	BulletSpeedPID.Calc(&BulletSpeedPID);
+	BulletIntensity = CHASSIS_SPEED_ATTENUATION * BulletSpeedPID.output;
 }
 
 //状态机切换
@@ -261,12 +274,13 @@ void controlLoop()
 	
 	if(WorkState != STOP_STATE) 
 	{
-		ControlYawSpeed();
-		ControlPitch();
-		setGMMotor();
+		//ControlYawSpeed();
+		//ControlPitch();
+		//setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
+		//ControlBullet();
 		//setCMMotor();
 	}
 }

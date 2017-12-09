@@ -121,6 +121,7 @@ typedef __packed enum
 
 
 extern ChassisSpeed_Ref_t ChassisSpeedRef; 
+extern int16_t bullet_ref;
 extern InputMode_e inputmode;
 extern float yawSpeedTarget;
 extern float pitchAngleTarget;

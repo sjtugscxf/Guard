@@ -14,7 +14,7 @@
 #define CanRxGetU16(canRxMsg, num) (((uint16_t)canRxMsg.Data[num * 2] << 8) | (uint16_t)canRxMsg.Data[num * 2 + 1])
 uint8_t isRcanStarted_CMGM = 0;
 CanRxMsgTypeDef CMGMCanRxMsg;
-Motor820RRxMsg_t CMFLRx,CMFRRx;
+Motor820RRxMsg_t CMFLRx,CMFRRx,BulletRx;
 Motor6623RxMsg_t GMPITCHRx,GMYAWRx;
 /********************CAN******************************/
 void InitCanReception()
@@ -57,6 +57,10 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 			case CMFR_RXID:
 				CMFRRx.angle = CanRxGetU16(CMGMCanRxMsg, 0);
 				CMFRRx.RotateSpeed = CanRxGetU16(CMGMCanRxMsg, 1);
+				break;
+			case BULLET_RXID:
+				BulletRx.angle = CanRxGetU16(CMGMCanRxMsg, 0);
+				BulletRx.RotateSpeed = CanRxGetU16(CMGMCanRxMsg, 1);
 				break;
 			case GMYAW_RXID:
 				GMYAWRx.angle = CanRxGetU16(CMGMCanRxMsg, 0);
