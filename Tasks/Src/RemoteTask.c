@@ -23,6 +23,7 @@ extern RampGen_t LRSpeedRamp ;   //键盘速度斜坡
 extern RampGen_t FBSpeedRamp  ;   
 
 float yawSpeedTarget = 0.0;
+float yawAngleTarget = 0.0;
 float pitchAngleTarget = 0.0;
 
 //遥控器控制量初始化
@@ -47,7 +48,7 @@ void RemoteControlProcess(Remote *rc)
 		bullet_ref = (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
 		
 		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		yawSpeedTarget = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_SPEED_INC_FACT; 
+		yawSpeedTarget = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_SPEED_INC_FACT;
 	}
 	RemoteShootControl(&g_switch1, rc->s1);
 }

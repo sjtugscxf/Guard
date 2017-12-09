@@ -82,6 +82,10 @@ extern uint16_t enemy_pitch;
 extern uint16_t enemy_yaw;
 extern uint16_t enemy_detect_cnt;
 
+extern int16_t yawIntensity ;
+
+extern uint16_t maincnt;
+
 void CMControlInit(void);
 
 #endif /*__ CONTROLTASK_H */

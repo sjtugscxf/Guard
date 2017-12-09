@@ -21,8 +21,8 @@
 #define CMFR_RXID 0x202u
 #define BULLET_RXID 0x203u
 
-#define GMYAW_RXID 0x205u
-#define GMPITCH_RXID 0x206u
+#define GMYAW_RXID 0x206u
+#define GMPITCH_RXID 0x205u
 
 //TxID
 #define CM_TXID 0x200u

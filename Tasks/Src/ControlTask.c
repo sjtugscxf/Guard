@@ -10,7 +10,6 @@
   ******************************************************************************
   */
 #include "includes.h"
-
 uint8_t find_enemy = 0;
 uint16_t enemy_yaw = YAW_OFFSET;
 uint16_t enemy_pitch = PITCH_OFFSET;
@@ -88,7 +87,12 @@ void WorkStateFSM(void)
 		}break;
 		case NORMAL_STATE://正常遥控调试模式
 		{
-			if (inputmode == STOP) WorkState = STOP_STATE;
+			if (inputmode == STOP) 
+			{
+				WorkState = STOP_STATE;
+				SetFrictionWheelSpeed(1000); 
+				frictionRamp.ResetCounter(&frictionRamp);
+			}
 			else if (inputmode == AUTO)
 			{
 				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
@@ -102,7 +106,12 @@ void WorkStateFSM(void)
 		{
 			if (find_enemy == 1) WorkState = ATTACK_STATE;
 			
-			if (inputmode == STOP) WorkState = STOP_STATE;
+			if (inputmode == STOP) 
+			{
+				WorkState = STOP_STATE;
+				SetFrictionWheelSpeed(1000); 
+				frictionRamp.ResetCounter(&frictionRamp);
+			}
 			else if (inputmode == REMOTE_INPUT)
 			{
 				SetFrictionWheelSpeed(1000); 
@@ -114,7 +123,12 @@ void WorkStateFSM(void)
 		{
 			if (find_enemy == 1) WorkState = DEFEND_STATE;
 			
-			if (inputmode == STOP) WorkState = STOP_STATE;
+			if (inputmode == STOP) 
+			{
+				WorkState = STOP_STATE;
+				SetFrictionWheelSpeed(1000); 
+				frictionRamp.ResetCounter(&frictionRamp);
+			}
 			else if (inputmode == REMOTE_INPUT)
 			{
 				SetFrictionWheelSpeed(1000); 
@@ -145,12 +159,12 @@ void setCMMotor()
 	CMGMMOTOR_CAN.pTxMsg->RTR = CAN_RTR_DATA;
 	CMGMMOTOR_CAN.pTxMsg->DLC = 0x08;
 	
-	CMGMMOTOR_CAN.pTxMsg->Data[0] = (uint8_t)(CMFLIntensity >> 8);
-	CMGMMOTOR_CAN.pTxMsg->Data[1] = (uint8_t)CMFLIntensity;
-	CMGMMOTOR_CAN.pTxMsg->Data[2] = (uint8_t)(CMFRIntensity >> 8);
-	CMGMMOTOR_CAN.pTxMsg->Data[3] = (uint8_t)CMFRIntensity;
-	CMGMMOTOR_CAN.pTxMsg->Data[4] = 0x00;
-	CMGMMOTOR_CAN.pTxMsg->Data[5] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[0] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[1] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[2] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[3] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[4] = (uint8_t)(BulletIntensity >> 8);
+	CMGMMOTOR_CAN.pTxMsg->Data[5] = (uint8_t)BulletIntensity;
 	CMGMMOTOR_CAN.pTxMsg->Data[6] = 0x00;
 	CMGMMOTOR_CAN.pTxMsg->Data[7] = 0x00;
 
@@ -182,10 +196,10 @@ void setGMMotor()
 	CMGMMOTOR_CAN.pTxMsg->RTR = CAN_RTR_DATA;
 	CMGMMOTOR_CAN.pTxMsg->DLC = 0x08;
 	
-	CMGMMOTOR_CAN.pTxMsg->Data[0] = (uint8_t)(yawIntensity >> 8);
-	CMGMMOTOR_CAN.pTxMsg->Data[1] = (uint8_t)yawIntensity;
-	CMGMMOTOR_CAN.pTxMsg->Data[2] = (uint8_t)(pitchIntensity >> 8);
-	CMGMMOTOR_CAN.pTxMsg->Data[3] = (uint8_t)pitchIntensity;
+	CMGMMOTOR_CAN.pTxMsg->Data[0] = (uint8_t)(pitchIntensity >> 8);
+	CMGMMOTOR_CAN.pTxMsg->Data[1] = (uint8_t)pitchIntensity;
+	CMGMMOTOR_CAN.pTxMsg->Data[2] = (uint8_t)(yawIntensity >> 8);
+	CMGMMOTOR_CAN.pTxMsg->Data[3] = (uint8_t)yawIntensity;
 	CMGMMOTOR_CAN.pTxMsg->Data[4] = 0;
 	CMGMMOTOR_CAN.pTxMsg->Data[5] = 0;
 	CMGMMOTOR_CAN.pTxMsg->Data[6] = 0;
@@ -206,19 +220,19 @@ void setGMMotor()
 }
 
 #define NORMALIZE_ANGLE180(angle) angle = ((angle) > 180) ? ((angle) - 360) : (((angle) < -180) ? (angle) + 360 : angle)
-fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(8.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 10000.0);
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(5.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 10000.0);
 fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(5.0, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 10000.0);
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(40.0, 0.0, 15.0, 10000.0, 10000.0, 10000.0, 3500.0);
-fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 5, 10000.0, 10000.0, 10000.0, 4000.0);
-#define yaw_zero 4708  //100
-#define pitch_zero 6400
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(8.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 3500.0);
+fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
+#define yaw_zero 7200  //100
+#define pitch_zero 4250
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
 
 //控制云台YAW轴
 void ControlYawSpeed(void)
-{		
+{	
 	yawIntensity = ProcessYawPID(yawSpeedTarget,-gYroZs);
 }
 
@@ -230,9 +244,9 @@ void ControlPitch(void)
 	pitchRealAngle = -(GMPITCHRx.angle - pitchZeroAngle) * 360 / 8192.0;
 	NORMALIZE_ANGLE180(pitchRealAngle);
 
-	MINMAX(pitchAngleTarget, -9.0f, 32);
+	MINMAX(pitchAngleTarget, -15.0f, 17);
 				
-	pitchIntensity = ProcessPitchPID(pitchAngleTarget,pitchRealAngle,-gYroXs);
+	pitchIntensity = ProcessPitchPID(pitchAngleTarget,pitchRealAngle,gYroYs);
 }
 
 //主控制循环
@@ -252,7 +266,7 @@ void controlLoop()
 	
 	if(WorkState == DEFEND_STATE)
 	{
-		yawSpeedTarget = 1.0;
+		yawSpeedTarget = 200.0;
 	}
 	
 	if(WorkState == ATTACK_STATE)
@@ -274,14 +288,14 @@ void controlLoop()
 	
 	if(WorkState != STOP_STATE) 
 	{
-		//ControlYawSpeed();
-		//ControlPitch();
-		//setGMMotor();
+		ControlYawSpeed();
+		ControlPitch();
+		setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
-		//ControlBullet();
-		//setCMMotor();
+		ControlBullet();
+		setCMMotor();
 	}
 }
 
