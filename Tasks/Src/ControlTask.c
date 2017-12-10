@@ -121,7 +121,7 @@ void WorkStateFSM(void)
 		}break;
 		case ATTACK_STATE:  //自动打击模式
 		{
-			if (find_enemy == 1) WorkState = DEFEND_STATE;
+			if (find_enemy == 0) WorkState = DEFEND_STATE;
 			
 			if (inputmode == STOP) 
 			{
