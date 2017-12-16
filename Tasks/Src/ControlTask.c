@@ -10,6 +10,16 @@
   ******************************************************************************
   */
 #include "includes.h"
+
+#define LED_GREEN_TOGGLE() HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin)
+#define LED_RED_TOGGLE()   HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin)
+#define LED_GREEN_OFF()     HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,GPIO_PIN_SET)
+#define LED_RED_OFF()       HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin,GPIO_PIN_SET)
+#define LED_GREEN_ON()    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,GPIO_PIN_RESET)
+#define LED_RED_ON()      HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin,GPIO_PIN_RESET)
+
+void HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState);
+
 uint8_t find_enemy = 0;
 uint16_t enemy_yaw = YAW_OFFSET;
 uint16_t enemy_pitch = PITCH_OFFSET;
@@ -72,6 +82,8 @@ void ControlBullet(void)
 //状态机切换
 void WorkStateFSM(void)
 {
+	static int blink_cnt = 0;
+	blink_cnt++;
 	switch (WorkState)
 	{
 		case PREPARE_STATE:
@@ -81,6 +93,9 @@ void WorkStateFSM(void)
 			{
 				WorkState = NORMAL_STATE;
 				prepare_time = 0;
+				LED_GREEN_OFF();
+				LED_RED_OFF();
+				blink_cnt = 0;
 			}
 			
 			if (inputmode == STOP) WorkState = STOP_STATE;
@@ -101,6 +116,12 @@ void WorkStateFSM(void)
 					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
 				}
 			}
+			
+			if (blink_cnt == 1000) 
+			{
+				blink_cnt = 0;
+				LED_GREEN_TOGGLE();
+			}
 		}break;
 		case DEFEND_STATE:  //防御模式，云台360度旋转
 		{
@@ -118,6 +139,11 @@ void WorkStateFSM(void)
 				frictionRamp.ResetCounter(&frictionRamp);
 				WorkState = NORMAL_STATE;
 			}
+			if (blink_cnt == 1000) 
+			{
+				blink_cnt = 0;
+				LED_RED_TOGGLE();
+			}
 		}break;
 		case ATTACK_STATE:  //自动打击模式
 		{
@@ -134,6 +160,12 @@ void WorkStateFSM(void)
 				SetFrictionWheelSpeed(1000); 
 				frictionRamp.ResetCounter(&frictionRamp);
 				WorkState = NORMAL_STATE;
+			}
+			if (blink_cnt == 1000) 
+			{
+				blink_cnt = 0;
+				LED_GREEN_TOGGLE();
+				LED_RED_TOGGLE();
 			}
 		}break;
 		case STOP_STATE://紧急停止
@@ -288,14 +320,14 @@ void controlLoop()
 	
 	if(WorkState != STOP_STATE) 
 	{
-		ControlYawSpeed();
-		ControlPitch();
-		setGMMotor();
+		//ControlYawSpeed();
+		//ControlPitch();
+		//setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
-		ControlBullet();
-		setCMMotor();
+		//ControlBullet();
+		//setCMMotor();
 	}
 }
 
