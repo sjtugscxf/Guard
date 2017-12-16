@@ -101,12 +101,15 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM12_Init();
   MX_USART3_UART_Init();
+  MX_USART6_UART_Init();
+  MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
 	//各模块初始化
 	InitRemoteControl();
 	InitMPU6500();
 	InitManifoldUart();
+	InitJudgeUart();
 	CMControlInit();
 	InitCanReception();
 	HAL_TIM_Base_Start_IT(&htim6);

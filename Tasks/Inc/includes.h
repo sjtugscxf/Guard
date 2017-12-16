@@ -29,5 +29,6 @@
 #include "drivers_ramp.h"
 #include "ShootTask.h"
 #include "ManifoldTask.h"
+#include "JudgeTask.h"
 
 #endif /* __INCLUDES_H */

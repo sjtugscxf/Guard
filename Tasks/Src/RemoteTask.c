@@ -13,7 +13,6 @@
 uint8_t rc_data[18];
 RC_Ctl_t RC_CtrlData;
 InputMode_e inputmode = REMOTE_INPUT; 
-JudgeState_e JUDGE_State = OFFLINE;	//这个应该声明为extern，本体声明写在裁判系统的Task中
 ChassisSpeed_Ref_t ChassisSpeedRef; 
 int16_t bullet_ref = 0;
 extern FrictionWheelState_e FrictionWheelState;
@@ -171,5 +170,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 	else if(UartHandle == &MANIFOLD_UART)
 	{
 		manifoldUartRxCpltCallback();  //妙算信号数据解算
+	}
+	else if(UartHandle == &JUDGE_UART)
+	{
+		judgeUartRxCpltCallback();  //裁判系统数据解算
 	}
 }   
