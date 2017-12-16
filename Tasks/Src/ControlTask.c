@@ -96,6 +96,7 @@ void WorkStateFSM(void)
 				LED_GREEN_OFF();
 				LED_RED_OFF();
 				blink_cnt = 0;
+				printf("START\n");
 			}
 			
 			if (inputmode == STOP) WorkState = STOP_STATE;
@@ -121,6 +122,7 @@ void WorkStateFSM(void)
 			{
 				blink_cnt = 0;
 				LED_GREEN_TOGGLE();
+				printf("%d %d \n",enemy_yaw,enemy_pitch);
 			}
 		}break;
 		case DEFEND_STATE:  //防御模式，云台360度旋转
@@ -172,7 +174,7 @@ void WorkStateFSM(void)
 		{
 			if (inputmode == REMOTE_INPUT)
 			{
-				WorkState = NORMAL_STATE;
+				WorkState = PREPARE_STATE;
 				RemoteTaskInit();
 			}
 		}break;
