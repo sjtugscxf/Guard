@@ -254,10 +254,11 @@ void setGMMotor()
 #define NORMALIZE_ANGLE180(angle) angle = ((angle) > 180) ? ((angle) - 360) : (((angle) < -180) ? (angle) + 360 : angle)
 fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(5.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 10000.0);
 fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(5.0, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 10000.0);
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(8.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 3500.0);
-fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(6.5, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 3500.0);
+//fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
+fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(10.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 2000.0);
 #define yaw_zero 7200  //100
-#define pitch_zero 4250
+#define pitch_zero 4600
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
@@ -276,7 +277,7 @@ void ControlPitch(void)
 	pitchRealAngle = -(GMPITCHRx.angle - pitchZeroAngle) * 360 / 8192.0;
 	NORMALIZE_ANGLE180(pitchRealAngle);
 
-	MINMAX(pitchAngleTarget, -15.0f, 17);
+	MINMAX(pitchAngleTarget, -25.0f, 13);
 				
 	pitchIntensity = ProcessPitchPID(pitchAngleTarget,pitchRealAngle,gYroYs);
 }
@@ -298,7 +299,7 @@ void controlLoop()
 	
 	if(WorkState == DEFEND_STATE)
 	{
-		yawSpeedTarget = 200.0;
+		yawSpeedTarget = 220.0;
 	}
 	
 	if(WorkState == ATTACK_STATE)
@@ -320,9 +321,9 @@ void controlLoop()
 	
 	if(WorkState != STOP_STATE) 
 	{
-		//ControlYawSpeed();
-		//ControlPitch();
-		//setGMMotor();
+		ControlYawSpeed();
+		ControlPitch();
+		setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
