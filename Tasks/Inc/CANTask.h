@@ -45,6 +45,9 @@ extern Motor820RRxMsg_t BulletRx;
 extern Motor6623RxMsg_t GMPITCHRx;
 extern Motor6623RxMsg_t	GMYAWRx;
 
+extern uint8_t can1_update;
+extern uint8_t can1_type;
+
 void InitCanReception();
 
 #endif /*__ CANTASK_H */

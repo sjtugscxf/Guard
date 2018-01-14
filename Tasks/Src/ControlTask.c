@@ -200,20 +200,30 @@ void setCMMotor()
 	CMGMMOTOR_CAN.pTxMsg->Data[6] = 0x00;
 	CMGMMOTOR_CAN.pTxMsg->Data[7] = 0x00;
 
-	//CAN通信前关中断
-	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_DisableIRQ(USART1_IRQn);
-	HAL_NVIC_DisableIRQ(USART3_IRQn);
-	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
-	if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
+	if(can1_update == 1 && can1_type == 0)
 	{
-		Error_Handler();
+		//CAN通信前关中断
+		HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
+		HAL_NVIC_DisableIRQ(USART1_IRQn);
+		HAL_NVIC_DisableIRQ(DMA2_Stream2_IRQn);
+		HAL_NVIC_DisableIRQ(TIM7_IRQn);
+		#ifdef DEBUG_MODE
+			HAL_NVIC_DisableIRQ(TIM1_UP_TIM10_IRQn);
+		#endif
+		if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		can1_update = 0;
+		//CAN通信后开中断，防止中断影响CAN信号发送
+		HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+		HAL_NVIC_EnableIRQ(USART1_IRQn);
+		HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+		HAL_NVIC_EnableIRQ(TIM7_IRQn);
+		#ifdef DEBUG_MODE
+			HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+		#endif
 	}
-	//CAN通信后开中断，防止中断影响CAN信号发送
-	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_EnableIRQ(USART1_IRQn);
-	HAL_NVIC_EnableIRQ(USART3_IRQn);
-	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
 
 //云台电机CAN信号控制
@@ -237,18 +247,28 @@ void setGMMotor()
 	CMGMMOTOR_CAN.pTxMsg->Data[6] = 0;
 	CMGMMOTOR_CAN.pTxMsg->Data[7] = 0;
 
-	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_DisableIRQ(USART1_IRQn);
-	HAL_NVIC_DisableIRQ(USART3_IRQn);
-	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
-	if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
+	if(can1_update == 1 && can1_type == 1)
 	{
-		Error_Handler();
+		HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
+		HAL_NVIC_DisableIRQ(USART1_IRQn);
+		HAL_NVIC_DisableIRQ(DMA2_Stream2_IRQn);
+		HAL_NVIC_DisableIRQ(TIM7_IRQn);
+		#ifdef DEBUG_MODE
+			HAL_NVIC_DisableIRQ(TIM1_UP_TIM10_IRQn);
+		#endif
+		if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		can1_update = 0;
+		HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+		HAL_NVIC_EnableIRQ(USART1_IRQn);
+		HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+		HAL_NVIC_EnableIRQ(TIM7_IRQn);
+		#ifdef DEBUG_MODE
+			HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+		#endif
 	}
-	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_EnableIRQ(USART1_IRQn);
-	HAL_NVIC_EnableIRQ(USART3_IRQn);
-	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
 
 #define NORMALIZE_ANGLE180(angle) angle = ((angle) > 180) ? ((angle) - 360) : (((angle) < -180) ? (angle) + 360 : angle)
@@ -285,7 +305,7 @@ void ControlPitch(void)
 //主控制循环
 void controlLoop()
 {
-	if(enemy_detect_cnt>2000)    //1s内没有刷新自动打击数据则回中
+	if(enemy_detect_cnt>1000)    //2s内没有刷新自动打击数据则回中
 	{
 		enemy_yaw = YAW_OFFSET;
 		enemy_pitch = PITCH_OFFSET;

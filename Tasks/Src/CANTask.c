@@ -16,6 +16,19 @@ uint8_t isRcanStarted_CMGM = 0;
 CanRxMsgTypeDef CMGMCanRxMsg;
 Motor820RRxMsg_t CMFLRx,CMFRRx,BulletRx;
 Motor6623RxMsg_t GMPITCHRx,GMYAWRx;
+
+uint8_t can1_update = 1;
+uint8_t can1_type = 1;
+/********************CAN发送*****************************/
+//云台底盘CAN数据依次发送保证发送资源正常
+void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
+{
+	if(hcan == &CMGMMOTOR_CAN){
+		can1_update = 1;
+		//can1_type = 1 - can1_type; //哨兵目前没有顶盘，先控制云台
+	}
+}
+
 /********************CAN******************************/
 void InitCanReception()
 {
@@ -42,12 +55,6 @@ void InitCanReception()
 
 //CAN接收中断入口函数
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
-	//处理CAN接收数据前关中断
-	HAL_NVIC_DisableIRQ(CAN1_TX_IRQn);
-	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_DisableIRQ(USART1_IRQn);
-	HAL_NVIC_DisableIRQ(USART3_IRQn);
-	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
 	if(hcan == &CMGMMOTOR_CAN){//CAN1数据
 		switch(CMGMCanRxMsg.StdId){
 			case CMFL_RXID:
@@ -81,10 +88,4 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 			isRcanStarted_CMGM = 1;
 		}
 	}
-	//处理CAN接收数据后开中断
-	HAL_NVIC_EnableIRQ(CAN1_TX_IRQn);
-	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
-	HAL_NVIC_EnableIRQ(USART1_IRQn);
-	HAL_NVIC_EnableIRQ(USART3_IRQn);
-	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
