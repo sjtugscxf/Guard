@@ -9,7 +9,7 @@
   * inserted by the user or by software development tools
   * are owned by their respective copyright owners.
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * COPYRIGHT(c) 2018 STMicroelectronics
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -82,14 +82,28 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+	HAL_NVIC_DisableIRQ(USART2_IRQn);
+	HAL_NVIC_DisableIRQ(USART3_IRQn);
+	HAL_NVIC_DisableIRQ(USART6_IRQn);
+	HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
+	HAL_NVIC_DisableIRQ(DMA1_Stream5_IRQn);
+	HAL_NVIC_DisableIRQ(DMA2_Stream1_IRQn);
+	
+	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
+	HAL_NVIC_DisableIRQ(USART1_IRQn);
+	HAL_NVIC_DisableIRQ(DMA2_Stream2_IRQn);
+	HAL_NVIC_DisableIRQ(TIM7_IRQn);
+	HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
+	#ifdef DEBUG_MODE
+		HAL_NVIC_DisableIRQ(TIM1_UP_TIM10_IRQn);
+	#endif
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -103,17 +117,35 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USART6_UART_Init();
   MX_USART2_UART_Init();
+  MX_TIM7_Init();
+  MX_TIM10_Init();
 
   /* USER CODE BEGIN 2 */
 	//各模块初始化
 	InitRemoteControl();
 	InitMPU6500();
-	InitManifoldUart();
-	InitJudgeUart();
 	CMControlInit();
 	InitCanReception();
+	InitManifoldUart();
+	
+	#ifdef DEBUG_MODE
+	ctrlUartInit();
+	HAL_TIM_Base_Start_IT(&htim10);
+	#endif
+	
+	InitJudgeUart();
 	HAL_TIM_Base_Start_IT(&htim6);
+	HAL_TIM_Base_Start_IT(&htim7);
 	InitUserTimer();
+	
+	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
+	HAL_NVIC_EnableIRQ(USART1_IRQn);
+	HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+	HAL_NVIC_EnableIRQ(TIM7_IRQn);
+	#ifdef DEBUG_MODE
+		HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+	#endif
+	HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
   /* USER CODE END 2 */
 
   /* Infinite loop */

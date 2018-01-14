@@ -160,12 +160,13 @@ void InitRemoteControl(){
 }
 
 //遥控器串口中断入口函数，从此处开始执行
+uint8_t rc_first_frame = 0;
+uint8_t rc_update = 0;
+uint8_t rc_cnt = 0;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 {
 	if(UartHandle == &RC_UART){
-		RemoteDataProcess(rc_data);				//遥控器数据解算
-		HAL_UART_AbortReceive(&RC_UART);
-		HAL_UART_Receive_DMA(&RC_UART, rc_data, 18);
+		rc_update = 1;
 	}
 	else if(UartHandle == &MANIFOLD_UART)
 	{

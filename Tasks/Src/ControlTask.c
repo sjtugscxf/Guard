@@ -340,4 +340,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		//主循环在时间中断中启动
 		controlLoop();
 	}
+	else if (htim->Instance == htim7.Instance)
+	{
+		rc_cnt++;
+		if (rc_update)
+		{
+			if( (rc_cnt <= 17) && (rc_first_frame == 1))
+			{
+				RemoteDataProcess(rc_data);				//遥控器数据解算
+		    HAL_UART_AbortReceive(&RC_UART);
+		    HAL_UART_Receive_DMA(&RC_UART, rc_data, 18);
+				rc_cnt = 0;
+			}
+			else
+			{
+				if(rc_first_frame) WorkState = PREPARE_STATE;
+				HAL_UART_AbortReceive(&RC_UART);
+		    HAL_UART_Receive_DMA(&RC_UART, rc_data, 18);
+				rc_cnt = 0;
+				rc_first_frame = 1;
+			}
+			rc_update = 0;
+		}
+	}
 }

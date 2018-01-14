@@ -16,6 +16,7 @@
 
 #define RC_UART huart1
 #define MANIFOLD_UART huart3
+#define CTRL_UART huart3
 #define JUDGE_UART huart6
 
 #define STICK_TO_CHASSIS_SPEED_REF_FACT     2.f
@@ -120,6 +121,12 @@ extern float yawSpeedTarget;
 extern float yawAngleTarget;
 extern float pitchAngleTarget;
 
+extern uint8_t rc_data[18];
+extern uint8_t rc_first_frame;
+extern uint8_t rc_update;
+extern uint8_t rc_cnt;
+
+void RemoteDataProcess(uint8_t *pData);
 void InitRemoteControl();
 void RemoteTaskInit();
 
