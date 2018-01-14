@@ -86,6 +86,14 @@ extern int16_t yawIntensity ;
 
 extern uint16_t maincnt;
 
+extern fw_PID_Regulator_t pitchPositionPID;
+extern fw_PID_Regulator_t yawPositionPID;
+extern fw_PID_Regulator_t pitchSpeedPID;
+extern fw_PID_Regulator_t yawSpeedPID;
+
+extern float yawRealAngle;
+extern float pitchRealAngle;
+
 void CMControlInit(void);
 
 #endif /*__ CONTROLTASK_H */
