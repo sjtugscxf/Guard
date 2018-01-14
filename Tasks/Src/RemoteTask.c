@@ -171,6 +171,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 	else if(UartHandle == &MANIFOLD_UART)
 	{
 		manifoldUartRxCpltCallback();  //妙算信号数据解算
+		#ifdef DEBUG_MODE
+		ctrlUartRxCpltCallback();
+		#endif
 	}
 	else if(UartHandle == &JUDGE_UART)
 	{

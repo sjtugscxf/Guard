@@ -22,13 +22,15 @@
 #include "gpio.h"
 
 #include "RemoteTask.h"
+#include "pid_regulator.h"
 #include "ControlTask.h"
 #include "IMUTask.h"
 #include "CANTask.h"
-#include "pid_regulator.h"
+//#include "pid_regulator.h"
 #include "drivers_ramp.h"
 #include "ShootTask.h"
 #include "ManifoldTask.h"
 #include "JudgeTask.h"
+#include "UpperTask.h"
 
 #endif /* __INCLUDES_H */
