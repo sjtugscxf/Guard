@@ -67,6 +67,52 @@
 	&PID_Reset,\
 }
 
+#define BULLET_POSITION_PID_DEFAULT \
+{\
+	0,\
+	0,\
+	{0,0},\
+	7.0f,\
+	0.0f,\
+	0.0f,\
+	0,\
+	0,\
+	0,\
+	10000,\
+	10000,\
+	10000,\
+	0,\
+	10000,\
+	0,\
+	0,\
+	0,\
+	&PID_Calc,\
+	&PID_Reset,\
+}
+
+#define BULLET_SPEED_PID_DEFAULT \
+{\
+	0,\
+	0,\
+	{0,0},\
+	1.0f,\
+	0.0f,\
+	0.0f,\
+	0,\
+	0,\
+	0,\
+	10000,\
+	10000,\
+	10000,\
+	0,\
+	4900,\
+	0,\
+	0,\
+	0,\
+	&PID_Calc,\
+	&PID_Reset,\
+}
+
 typedef enum
 {
 	PREPARE_STATE,     	
@@ -91,6 +137,7 @@ extern fw_PID_Regulator_t yawPositionPID;
 extern fw_PID_Regulator_t pitchSpeedPID;
 extern fw_PID_Regulator_t yawSpeedPID;
 
+extern double bullet_angle_target;
 extern float yawRealAngle;
 extern float pitchRealAngle;
 

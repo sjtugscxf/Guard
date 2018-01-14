@@ -30,6 +30,9 @@ PID_Regulator_t CM1SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t CM2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t BulletSpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 
+PID_Regulator_t BulletPositionPID = BULLET_POSITION_PID_DEFAULT;
+//PID_Regulator_t BulletSpeedPID = BULLET_SPEED_PID_DEFAULT;//0.0, 0.00003
+
 int16_t CMFLIntensity = 0, CMFRIntensity = 0, BulletIntensity = 0;
 int16_t yawIntensity = 0;		
 int16_t pitchIntensity = 0;
@@ -75,6 +78,42 @@ void ControlBullet(void)
 
 	BulletSpeedPID.Calc(&BulletSpeedPID);
 	BulletIntensity = CHASSIS_SPEED_ATTENUATION * BulletSpeedPID.output;
+}
+
+double bullet_angle_target=0;
+double bulletRealAngle=0;
+double bullet_zero_angle=0;
+void setBulletWithAngle(double targetAngle){//360.0 * 12 * 2
+		static double AngleLast = 180.0;
+		double AngleCurr = BulletRx.angle * 360 / 8192.0;
+		static uint8_t isInitiated=0;
+		if(isInitiated==0)
+		{
+			bulletRealAngle=AngleCurr;
+			bullet_zero_angle=AngleCurr;
+			AngleLast=AngleCurr;
+			isInitiated=1;
+			return;
+		}
+		if(AngleCurr - AngleLast > 180){
+			bulletRealAngle += AngleCurr - 360 - AngleLast;
+		}else if(AngleCurr - AngleLast < -180){
+			bulletRealAngle += AngleCurr + 360 - AngleLast;
+		}else{
+			bulletRealAngle += AngleCurr - AngleLast;
+		}
+		AngleLast=AngleCurr;
+		//RealSpeed
+		double realSpeed = BulletRx.RotateSpeed * 6;//度每秒(* 360 / 60.0)
+
+		BulletPositionPID.ref = targetAngle;
+		BulletPositionPID.fdb = bulletRealAngle;
+		BulletPositionPID.Calc(&BulletPositionPID);
+		
+		BulletSpeedPID.ref = BulletPositionPID.output;
+		BulletSpeedPID.fdb = realSpeed;
+		BulletSpeedPID.Calc(&BulletSpeedPID);
+		BulletIntensity = BulletSpeedPID.output;
 }
 
 //状态机切换
@@ -348,6 +387,7 @@ void controlLoop()
 		//ControlCMFL();
 		//ControlCMFR();
 		//ControlBullet();
+		//setBulletWithAngle(bullet_angle_target + bullet_zero_angle);
 		//setCMMotor();
 	}
 }
