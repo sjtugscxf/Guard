@@ -18,6 +18,7 @@
 #define LED_GREEN_ON()    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,GPIO_PIN_RESET)
 #define LED_RED_ON()      HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin,GPIO_PIN_RESET)
 
+
 uint8_t find_enemy = 0;
 uint16_t enemy_yaw = YAW_OFFSET;
 uint16_t enemy_pitch = PITCH_OFFSET;
@@ -148,18 +149,18 @@ void WorkStateFSM(void)
 			}
 			else if (inputmode == AUTO)
 			{
-				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
-				if(frictionRamp.IsOverflow(&frictionRamp))
-				{
+				//SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				//if(frictionRamp.IsOverflow(&frictionRamp))
+				//{
 					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
-				}
+				//}
 			}
 			
 			if (blink_cnt == 1000) 
 			{
 				blink_cnt = 0;
 				LED_GREEN_TOGGLE();
-				printf("%d %d \n",enemy_yaw,enemy_pitch);
+				//printf("%d %d \n",enemy_yaw,enemy_pitch);
 			}
 		}break;
 		case DEFEND_STATE:  //防御模式，云台360度旋转
@@ -317,7 +318,7 @@ fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(6.5, 0.0, 0.0, 10000.0, 10000.0, 
 //fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(10.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 2000.0);
 #define yaw_zero 7200  //100
-#define pitch_zero 4600
+#define pitch_zero 6875
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
@@ -336,11 +337,15 @@ void ControlPitch(void)
 	pitchRealAngle = -(GMPITCHRx.angle - pitchZeroAngle) * 360 / 8192.0;
 	NORMALIZE_ANGLE180(pitchRealAngle);
 
-	MINMAX(pitchAngleTarget, -25.0f, 13);
+	MINMAX(pitchAngleTarget, -10.0f, 25);
 				
 	pitchIntensity = ProcessPitchPID(pitchAngleTarget,pitchRealAngle,gYroYs);
 }
 
+float enemy_yaw_err = 0;
+float enemy_yaw_out = 0;
+float enemy_pitch_err = 0;
+float enemy_pitch_out = 0;
 //主控制循环
 void controlLoop()
 {
@@ -358,21 +363,24 @@ void controlLoop()
 	
 	if(WorkState == DEFEND_STATE)
 	{
-		yawSpeedTarget = 220.0;
+		//yawSpeedTarget = 220.0;
+		yawSpeedTarget = 0;
 	}
 	
 	if(WorkState == ATTACK_STATE)
 	{
 		static float enemy_yaw_err_last = 0;
-		float enemy_yaw_err = (float)((int16_t)YAW_OFFSET - enemy_yaw);
-		float enemy_yaw_out = enemy_yaw_err/1000 * fabs(enemy_yaw_err)  * AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
+		enemy_yaw_err = (float)((int16_t)YAW_OFFSET - enemy_yaw);
+		//enemy_yaw_out = enemy_yaw_err/10 * fabs(enemy_yaw_err)  * AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
+		enemy_yaw_out = enemy_yaw_err *  AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
 		if (enemy_yaw_out>2) enemy_yaw_out = 2;
 		else if (enemy_yaw_out<-2) enemy_yaw_out = -2;
 		yawSpeedTarget = enemy_yaw_out;
 		
 		static float enemy_pitch_err_last = 0;
-		float enemy_pitch_err = (float)((int16_t)PITCH_OFFSET - enemy_pitch);
-		float enemy_pitch_out = enemy_pitch_err/1000 * fabs(enemy_pitch_err) * AUTO_ATTACK_PITCH_KP + (enemy_pitch_err - enemy_pitch_err_last)*AUTO_ATTACK_PITCH_KD;
+		enemy_pitch_err = (float)((int16_t)PITCH_OFFSET - enemy_pitch);
+		//enemy_pitch_out = enemy_pitch_err/10 * fabs(enemy_pitch_err) * AUTO_ATTACK_PITCH_KP + (enemy_pitch_err - enemy_pitch_err_last)*AUTO_ATTACK_PITCH_KD;
+		enemy_pitch_out = enemy_pitch_err * AUTO_ATTACK_PITCH_KP + (enemy_pitch_err - enemy_pitch_err_last)*AUTO_ATTACK_PITCH_KD;
 		if (enemy_pitch_out>1) enemy_pitch_out = 1;
 		else if (enemy_pitch_out<-1) enemy_pitch_out = -1;
 		pitchAngleTarget -= enemy_pitch_out;
