@@ -90,12 +90,12 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 	HAL_NVIC_DisableIRQ(USART2_IRQn);
+	HAL_NVIC_DisableIRQ(DMA1_Stream5_IRQn);
+	
+	HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
+	HAL_NVIC_DisableIRQ(DMA2_Stream1_IRQn);
 	HAL_NVIC_DisableIRQ(USART3_IRQn);
 	HAL_NVIC_DisableIRQ(USART6_IRQn);
-	HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
-	HAL_NVIC_DisableIRQ(DMA1_Stream5_IRQn);
-	HAL_NVIC_DisableIRQ(DMA2_Stream1_IRQn);
-	
 	HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_DisableIRQ(USART1_IRQn);
 	HAL_NVIC_DisableIRQ(DMA2_Stream2_IRQn);
@@ -133,11 +133,15 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim10);
 	#endif
 	
-	InitJudgeUart();
+	//InitJudgeUart();
 	HAL_TIM_Base_Start_IT(&htim6);
 	HAL_TIM_Base_Start_IT(&htim7);
 	InitUserTimer();
 	
+	HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+	HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+	HAL_NVIC_EnableIRQ(USART3_IRQn);
+	HAL_NVIC_EnableIRQ(USART6_IRQn);
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 	HAL_NVIC_EnableIRQ(USART1_IRQn);
 	HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);

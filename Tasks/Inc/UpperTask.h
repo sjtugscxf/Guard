@@ -14,7 +14,7 @@
 
 #include "includes.h"
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 #ifdef DEBUG_MODE
 //--------------------底层接收驱动部分-------------------//

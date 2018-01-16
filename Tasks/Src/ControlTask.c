@@ -18,7 +18,10 @@
 #define LED_GREEN_ON()    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,GPIO_PIN_RESET)
 #define LED_RED_ON()      HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin,GPIO_PIN_RESET)
 
-
+float auto_attack_yaw_kp = 0.3;
+float auto_attack_pitch_kp = 0.001;
+float auto_attack_yaw_kd = 0.01;
+float auto_attack_pitch_kd = 0.0;
 uint8_t find_enemy = 0;
 uint16_t enemy_yaw = YAW_OFFSET;
 uint16_t enemy_pitch = PITCH_OFFSET;
@@ -243,6 +246,10 @@ void setCMMotor()
 	if(can1_update == 1 && can1_type == 0)
 	{
 		//CAN通信前关中断
+		HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
+	  HAL_NVIC_DisableIRQ(DMA2_Stream1_IRQn);
+		HAL_NVIC_DisableIRQ(USART3_IRQn);
+		HAL_NVIC_DisableIRQ(USART6_IRQn);
 		HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
 		HAL_NVIC_DisableIRQ(USART1_IRQn);
 		HAL_NVIC_DisableIRQ(DMA2_Stream2_IRQn);
@@ -256,6 +263,10 @@ void setCMMotor()
 		}
 		can1_update = 0;
 		//CAN通信后开中断，防止中断影响CAN信号发送
+		HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+		HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+		HAL_NVIC_EnableIRQ(USART3_IRQn);
+		HAL_NVIC_EnableIRQ(USART6_IRQn);
 		HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
 		HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -289,6 +300,10 @@ void setGMMotor()
 
 	if(can1_update == 1 && can1_type == 1)
 	{
+		HAL_NVIC_DisableIRQ(DMA1_Stream1_IRQn);
+	  HAL_NVIC_DisableIRQ(DMA2_Stream1_IRQn);
+		HAL_NVIC_DisableIRQ(USART3_IRQn);
+		HAL_NVIC_DisableIRQ(USART6_IRQn);
 		HAL_NVIC_DisableIRQ(CAN1_RX0_IRQn);
 		HAL_NVIC_DisableIRQ(USART1_IRQn);
 		HAL_NVIC_DisableIRQ(DMA2_Stream2_IRQn);
@@ -301,6 +316,10 @@ void setGMMotor()
 			Error_Handler();
 		}
 		can1_update = 0;
+		HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+		HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+		HAL_NVIC_EnableIRQ(USART3_IRQn);
+		HAL_NVIC_EnableIRQ(USART6_IRQn);
 		HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
 		HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
@@ -372,15 +391,15 @@ void controlLoop()
 		static float enemy_yaw_err_last = 0;
 		enemy_yaw_err = (float)((int16_t)YAW_OFFSET - enemy_yaw);
 		//enemy_yaw_out = enemy_yaw_err/10 * fabs(enemy_yaw_err)  * AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
-		enemy_yaw_out = enemy_yaw_err *  AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
-		if (enemy_yaw_out>2) enemy_yaw_out = 2;
-		else if (enemy_yaw_out<-2) enemy_yaw_out = -2;
-		yawSpeedTarget = enemy_yaw_out;
+		enemy_yaw_out = enemy_yaw_err *  auto_attack_yaw_kp + (enemy_yaw_err - enemy_yaw_err_last)*auto_attack_yaw_kd;
+		if (enemy_yaw_out>60) enemy_yaw_out = 60;
+		else if (enemy_yaw_out<-60) enemy_yaw_out = -60;
+		yawSpeedTarget = -enemy_yaw_out;
 		
 		static float enemy_pitch_err_last = 0;
 		enemy_pitch_err = (float)((int16_t)PITCH_OFFSET - enemy_pitch);
 		//enemy_pitch_out = enemy_pitch_err/10 * fabs(enemy_pitch_err) * AUTO_ATTACK_PITCH_KP + (enemy_pitch_err - enemy_pitch_err_last)*AUTO_ATTACK_PITCH_KD;
-		enemy_pitch_out = enemy_pitch_err * AUTO_ATTACK_PITCH_KP + (enemy_pitch_err - enemy_pitch_err_last)*AUTO_ATTACK_PITCH_KD;
+		enemy_pitch_out = enemy_pitch_err * auto_attack_pitch_kp + (enemy_pitch_err - enemy_pitch_err_last)*auto_attack_pitch_kd;
 		if (enemy_pitch_out>1) enemy_pitch_out = 1;
 		else if (enemy_pitch_out<-1) enemy_pitch_out = -1;
 		pitchAngleTarget -= enemy_pitch_out;

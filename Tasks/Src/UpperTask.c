@@ -145,8 +145,8 @@ void zykProcessData()
 		else if(ComProtocal(buf,"#GMYPI","$","@",data))
 		{
 			float p=atof(data[0]);
-			yawPositionPID.ki=p;
-			printf("Yaw position I change to %f\r\n",yawPositionPID.ki);
+			auto_attack_yaw_kp=p;
+			printf("auto yaw kp %f\r\n",auto_attack_yaw_kp);
 		}
 		else if(ComProtocal(buf,"#GMYPD","$","@",data))
 		{
@@ -163,8 +163,8 @@ void zykProcessData()
 		else if(ComProtocal(buf,"#GMYSI","$","@",data))
 		{
 			float p=atof(data[0]);
-			yawSpeedPID.ki=p;
-			printf("Yaw speed I change to %f\r\n",yawSpeedPID.ki);
+			auto_attack_yaw_kd=p;
+			printf("auto yaw kd %f\r\n",auto_attack_yaw_kd);
 		}
 		else if(ComProtocal(buf,"#GMYSD","$","@",data))
 		{
@@ -182,8 +182,8 @@ void zykProcessData()
 		else if(ComProtocal(buf,"#GMPPI","$","@",data))
 		{
 			float p=atof(data[0]);
-			pitchPositionPID.ki=p;
-			printf("Pitch position I change to %f\r\n",pitchPositionPID.ki);
+			auto_attack_pitch_kp=p;
+			printf("auto pitch kp %f\r\n",auto_attack_pitch_kp);
 		}
 		else if(ComProtocal(buf,"#GMPPD","$","@",data))
 		{
@@ -200,8 +200,8 @@ void zykProcessData()
 		else if(ComProtocal(buf,"#GMPSI","$","@",data))
 		{
 			float p=atof(data[0]);
-			pitchSpeedPID.ki=p;
-			printf("Pitch speed I change to %f\r\n",pitchSpeedPID.ki);
+			auto_attack_pitch_kd=p;
+			printf("auto pitch kd %f\r\n",auto_attack_pitch_kd);
 		}
 		else if(ComProtocal(buf,"#GMPSD","$","@",data))
 		{

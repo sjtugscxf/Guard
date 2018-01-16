@@ -14,9 +14,9 @@
 
 #include "includes.h"
 
-#define AUTO_ATTACK_YAW_KP      0.005f
+#define AUTO_ATTACK_YAW_KP      0.1f
 #define AUTO_ATTACK_YAW_KD      0 
-#define AUTO_ATTACK_PITCH_KP      0.005f
+#define AUTO_ATTACK_PITCH_KP      0.0005f
 #define AUTO_ATTACK_PITCH_KD      0 
 #define YAW_OFFSET         330u  
 #define PITCH_OFFSET       370u  
@@ -140,6 +140,10 @@ extern fw_PID_Regulator_t yawSpeedPID;
 extern double bullet_angle_target;
 extern float yawRealAngle;
 extern float pitchRealAngle;
+extern float auto_attack_yaw_kp;
+extern float auto_attack_pitch_kp;
+extern float auto_attack_yaw_kd;
+extern float auto_attack_pitch_kd;
 
 void CMControlInit(void);
 

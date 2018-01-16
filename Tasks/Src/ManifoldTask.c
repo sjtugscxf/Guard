@@ -18,7 +18,7 @@
 #endif 
 PUTCHAR_PROTOTYPE
 {
-	HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&ch, 1, 0xFFFF);
+	HAL_UART_Transmit(&CTRL_UART , (uint8_t *)&ch, 1, 0xFFFF);
 	return ch;
 }
 
