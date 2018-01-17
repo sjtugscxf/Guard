@@ -20,6 +20,7 @@
 #define CMFL_RXID 0x201u
 #define CMFR_RXID 0x202u
 #define BULLET_RXID 0x203u
+#define BULLET2_RXID 0x204u
 
 #define GMYAW_RXID 0x206u
 #define GMPITCH_RXID 0x205u
@@ -42,6 +43,7 @@ typedef struct{
 extern Motor820RRxMsg_t CMFLRx;
 extern Motor820RRxMsg_t CMFRRx;
 extern Motor820RRxMsg_t BulletRx;
+extern Motor820RRxMsg_t Bullet2Rx;
 extern Motor6623RxMsg_t GMPITCHRx;
 extern Motor6623RxMsg_t	GMYAWRx;
 

@@ -14,11 +14,11 @@
 #define CanRxGetU16(canRxMsg, num) (((uint16_t)canRxMsg.Data[num * 2] << 8) | (uint16_t)canRxMsg.Data[num * 2 + 1])
 uint8_t isRcanStarted_CMGM = 0;
 CanRxMsgTypeDef CMGMCanRxMsg;
-Motor820RRxMsg_t CMFLRx,CMFRRx,BulletRx;
+Motor820RRxMsg_t CMFLRx,CMFRRx,BulletRx,Bullet2Rx;
 Motor6623RxMsg_t GMPITCHRx,GMYAWRx;
 
 uint8_t can1_update = 1;
-uint8_t can1_type = 1;
+uint8_t can1_type = 0;
 /********************CAN发送*****************************/
 //云台底盘CAN数据依次发送保证发送资源正常
 void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
@@ -68,6 +68,10 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 			case BULLET_RXID:
 				BulletRx.angle = CanRxGetU16(CMGMCanRxMsg, 0);
 				BulletRx.RotateSpeed = CanRxGetU16(CMGMCanRxMsg, 1);
+				break;
+			case BULLET2_RXID:
+				Bullet2Rx.angle = CanRxGetU16(CMGMCanRxMsg, 0);
+				Bullet2Rx.RotateSpeed = CanRxGetU16(CMGMCanRxMsg, 1);
 				break;
 			case GMYAW_RXID:
 				GMYAWRx.angle = CanRxGetU16(CMGMCanRxMsg, 0);

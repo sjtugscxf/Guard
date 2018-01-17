@@ -14,7 +14,8 @@ uint8_t rc_data[18];
 RC_Ctl_t RC_CtrlData;
 InputMode_e inputmode = REMOTE_INPUT; 
 ChassisSpeed_Ref_t ChassisSpeedRef; 
-int16_t bullet_ref = 0;
+float bullet_ref = 0;
+float bullet2_ref = 0;
 extern FrictionWheelState_e FrictionWheelState;
 RemoteSwitch_t g_switch1;
 extern RampGen_t frictionRamp ;  //摩擦轮斜坡
@@ -44,11 +45,12 @@ void RemoteControlProcess(Remote *rc)
 {
 	if(WorkState == NORMAL_STATE)
 	{
-		//bullet_ref = (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
+		bullet_ref = (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT * 0.2;
+		bullet2_ref = (rc->ch0 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT * 1.5;
 		//bullet_angle_target += (rc->ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_BULLET_POSITION_REF_FACT;
 		
-		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		yawSpeedTarget = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_SPEED_INC_FACT;
+		//pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
+		//yawSpeedTarget = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_SPEED_INC_FACT;
 	}
 	RemoteShootControl(&g_switch1, rc->s1);
 }

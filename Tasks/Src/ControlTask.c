@@ -33,11 +33,12 @@ PID_Regulator_t CMRotatePID = CHASSIS_MOTOR_ROTATE_PID_DEFAULT;
 PID_Regulator_t CM1SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t CM2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t BulletSpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
+PID_Regulator_t Bullet2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 
 PID_Regulator_t BulletPositionPID = BULLET_POSITION_PID_DEFAULT;
 //PID_Regulator_t BulletSpeedPID = BULLET_SPEED_PID_DEFAULT;//0.0, 0.00003
 
-int16_t CMFLIntensity = 0, CMFRIntensity = 0, BulletIntensity = 0;
+int16_t CMFLIntensity = 0, CMFRIntensity = 0, BulletIntensity = 0,Bullet2Intensity = 0;
 int16_t yawIntensity = 0;		
 int16_t pitchIntensity = 0;
 
@@ -48,6 +49,7 @@ void CMControlInit(void)
 	CM1SpeedPID.Reset(&CM1SpeedPID);
 	CM2SpeedPID.Reset(&CM2SpeedPID);
 	BulletSpeedPID.Reset(&BulletSpeedPID);
+	Bullet2SpeedPID.Reset(&Bullet2SpeedPID);
 }
 
 //单个底盘电机的控制，下同
@@ -82,6 +84,19 @@ void ControlBullet(void)
 
 	BulletSpeedPID.Calc(&BulletSpeedPID);
 	BulletIntensity = CHASSIS_SPEED_ATTENUATION * BulletSpeedPID.output;
+}
+
+void ControlBullet2(void)
+{		
+	Bullet2SpeedPID.kp = 5.0;
+	Bullet2SpeedPID.kd = 0.0;
+	Bullet2SpeedPID.ref = bullet2_ref*0.075;
+	Bullet2SpeedPID.ref = 160 * Bullet2SpeedPID.ref;	
+			
+	Bullet2SpeedPID.fdb = Bullet2Rx.RotateSpeed;
+
+	Bullet2SpeedPID.Calc(&Bullet2SpeedPID);
+	Bullet2Intensity = CHASSIS_SPEED_ATTENUATION * Bullet2SpeedPID.output;
 }
 
 double bullet_angle_target=0;
@@ -240,8 +255,8 @@ void setCMMotor()
 	CMGMMOTOR_CAN.pTxMsg->Data[3] = 0x00;
 	CMGMMOTOR_CAN.pTxMsg->Data[4] = (uint8_t)(BulletIntensity >> 8);
 	CMGMMOTOR_CAN.pTxMsg->Data[5] = (uint8_t)BulletIntensity;
-	CMGMMOTOR_CAN.pTxMsg->Data[6] = 0x00;
-	CMGMMOTOR_CAN.pTxMsg->Data[7] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[6] = (uint8_t)(Bullet2Intensity >> 8);
+	CMGMMOTOR_CAN.pTxMsg->Data[7] = (uint8_t)Bullet2Intensity;
 
 	if(can1_update == 1 && can1_type == 0)
 	{
@@ -407,15 +422,16 @@ void controlLoop()
 	
 	if(WorkState != STOP_STATE) 
 	{
-		ControlYawSpeed();
-		ControlPitch();
-		setGMMotor();
+		//ControlYawSpeed();
+		//ControlPitch();
+		//setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
-		//ControlBullet();
+		ControlBullet();
+		ControlBullet2();
 		//setBulletWithAngle(bullet_angle_target + bullet_zero_angle);
-		//setCMMotor();
+		setCMMotor();
 	}
 }
 

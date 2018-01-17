@@ -116,7 +116,8 @@ typedef __packed struct
 }RemoteSwitch_t;
 
 extern ChassisSpeed_Ref_t ChassisSpeedRef; 
-extern int16_t bullet_ref;
+extern float bullet_ref;
+extern float bullet2_ref;
 extern InputMode_e inputmode;
 extern float yawSpeedTarget;
 extern float yawAngleTarget;
