@@ -36,7 +36,9 @@ PID_Regulator_t BulletSpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 PID_Regulator_t Bullet2SpeedPID = CHASSIS_MOTOR_SPEED_PID_DEFAULT;
 
 PID_Regulator_t BulletPositionPID = BULLET_POSITION_PID_DEFAULT;
+PID_Regulator_t Bullet2PositionPID = BULLET_POSITION_PID_DEFAULT;
 //PID_Regulator_t BulletSpeedPID = BULLET_SPEED_PID_DEFAULT;//0.0, 0.00003
+//PID_Regulator_t Bullet2SpeedPID = BULLET_SPEED_PID_DEFAULT;//0.0, 0.00003
 
 int16_t CMFLIntensity = 0, CMFRIntensity = 0, BulletIntensity = 0,Bullet2Intensity = 0;
 int16_t yawIntensity = 0;		
@@ -50,6 +52,8 @@ void CMControlInit(void)
 	CM2SpeedPID.Reset(&CM2SpeedPID);
 	BulletSpeedPID.Reset(&BulletSpeedPID);
 	Bullet2SpeedPID.Reset(&Bullet2SpeedPID);
+	//BulletPositionPID.Reset(&BulletPositionPID);
+	//Bullet2PositionPID.Reset(&Bullet2PositionPID);
 }
 
 //单个底盘电机的控制，下同
@@ -133,6 +137,42 @@ void setBulletWithAngle(double targetAngle){//360.0 * 12 * 2
 		BulletSpeedPID.fdb = realSpeed;
 		BulletSpeedPID.Calc(&BulletSpeedPID);
 		BulletIntensity = BulletSpeedPID.output;
+}
+
+double bullet2_angle_target=0;
+double bullet2RealAngle=0;
+double bullet2_zero_angle=0;
+void setBullet2WithAngle(double targetAngle){//360.0 * 12 * 2
+		static double AngleLast = 180.0;
+		double AngleCurr = Bullet2Rx.angle * 360 / 8192.0;
+		static uint8_t isInitiated=0;
+		if(isInitiated==0)
+		{
+			bullet2RealAngle=AngleCurr;
+			bullet2_zero_angle=AngleCurr;
+			AngleLast=AngleCurr;
+			isInitiated=1;
+			return;
+		}
+		if(AngleCurr - AngleLast > 180){
+			bullet2RealAngle += AngleCurr - 360 - AngleLast;
+		}else if(AngleCurr - AngleLast < -180){
+			bullet2RealAngle += AngleCurr + 360 - AngleLast;
+		}else{
+			bullet2RealAngle += AngleCurr - AngleLast;
+		}
+		AngleLast=AngleCurr;
+		//RealSpeed
+		double realSpeed = Bullet2Rx.RotateSpeed * 6;//度每秒(* 360 / 60.0)
+
+		Bullet2PositionPID.ref = targetAngle;
+		Bullet2PositionPID.fdb = bullet2RealAngle;
+		Bullet2PositionPID.Calc(&Bullet2PositionPID);
+		
+		Bullet2SpeedPID.ref = Bullet2PositionPID.output;
+		Bullet2SpeedPID.fdb = realSpeed;
+		Bullet2SpeedPID.Calc(&Bullet2SpeedPID);
+		Bullet2Intensity = Bullet2SpeedPID.output;
 }
 
 //状态机切换
@@ -431,6 +471,7 @@ void controlLoop()
 		ControlBullet();
 		ControlBullet2();
 		//setBulletWithAngle(bullet_angle_target + bullet_zero_angle);
+		//setBullet2WithAngle(bullet_angle_target + bullet_zero_angle);
 		setCMMotor();
 	}
 }

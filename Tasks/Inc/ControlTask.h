@@ -138,6 +138,7 @@ extern fw_PID_Regulator_t pitchSpeedPID;
 extern fw_PID_Regulator_t yawSpeedPID;
 
 extern double bullet_angle_target;
+extern double bullet2_angle_target;
 extern float yawRealAngle;
 extern float pitchRealAngle;
 extern float auto_attack_yaw_kp;
