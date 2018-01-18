@@ -23,6 +23,7 @@ float auto_attack_pitch_kp = 0.001;
 float auto_attack_yaw_kd = 0.01;
 float auto_attack_pitch_kd = 0.0;
 uint8_t find_enemy = 0;
+uint8_t on_enemy = 0;
 uint16_t enemy_yaw = YAW_OFFSET;
 uint16_t enemy_pitch = PITCH_OFFSET;
 uint16_t enemy_detect_cnt = 0;
@@ -174,7 +175,8 @@ void setBullet2WithAngle(double targetAngle){//360.0 * 12 * 2
 		Bullet2SpeedPID.Calc(&Bullet2SpeedPID);
 		Bullet2Intensity = Bullet2SpeedPID.output;
 }
-
+extern FrictionWheelState_e FrictionWheelState;
+extern Shoot_State_e ShootState;
 //状态机切换
 void WorkStateFSM(void)
 {
@@ -204,14 +206,16 @@ void WorkStateFSM(void)
 				WorkState = STOP_STATE;
 				SetFrictionWheelSpeed(1000); 
 				frictionRamp.ResetCounter(&frictionRamp);
+				FrictionWheelState = FRICTION_WHEEL_OFF;
 			}
 			else if (inputmode == AUTO)
 			{
-				//SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
-				//if(frictionRamp.IsOverflow(&frictionRamp))
-				//{
+				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				if(frictionRamp.IsOverflow(&frictionRamp))
+				{
 					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
-				//}
+					FrictionWheelState = FRICTION_WHEEL_ON;
+				}
 			}
 			
 			if (blink_cnt == 1000) 
@@ -229,12 +233,14 @@ void WorkStateFSM(void)
 			{
 				WorkState = STOP_STATE;
 				SetFrictionWheelSpeed(1000); 
+				FrictionWheelState = FRICTION_WHEEL_OFF;
 				frictionRamp.ResetCounter(&frictionRamp);
 			}
 			else if (inputmode == REMOTE_INPUT)
 			{
 				SetFrictionWheelSpeed(1000); 
 				frictionRamp.ResetCounter(&frictionRamp);
+				FrictionWheelState = FRICTION_WHEEL_OFF;
 				WorkState = NORMAL_STATE;
 			}
 			if (blink_cnt == 1000) 
@@ -252,11 +258,13 @@ void WorkStateFSM(void)
 				WorkState = STOP_STATE;
 				SetFrictionWheelSpeed(1000); 
 				frictionRamp.ResetCounter(&frictionRamp);
+				FrictionWheelState = FRICTION_WHEEL_OFF;
 			}
 			else if (inputmode == REMOTE_INPUT)
 			{
 				SetFrictionWheelSpeed(1000); 
 				frictionRamp.ResetCounter(&frictionRamp);
+				FrictionWheelState = FRICTION_WHEEL_OFF;
 				WorkState = NORMAL_STATE;
 			}
 			if (blink_cnt == 1000) 
@@ -458,6 +466,9 @@ void controlLoop()
 		if (enemy_pitch_out>1) enemy_pitch_out = 1;
 		else if (enemy_pitch_out<-1) enemy_pitch_out = -1;
 		pitchAngleTarget -= enemy_pitch_out;
+		
+		if(enemy_yaw_err<100 && enemy_yaw_err>-100 && enemy_pitch_err<75 && enemy_pitch_err>-75) ShootState = SHOOTING;
+		else ShootState = NOSHOOTING;
 	}
 	
 	if(WorkState != STOP_STATE) 
