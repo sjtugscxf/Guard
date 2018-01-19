@@ -19,7 +19,7 @@
 #define AUTO_ATTACK_PITCH_KP      0.0005f
 #define AUTO_ATTACK_PITCH_KD      0 
 #define YAW_OFFSET         330u  
-#define PITCH_OFFSET       370u  
+#define PITCH_OFFSET       220u  
 #define CHASSIS_SPEED_ATTENUATION   (1.30f)
 #define CHASSIS_MOTOR_ROTATE_PID_DEFAULT \
 {\

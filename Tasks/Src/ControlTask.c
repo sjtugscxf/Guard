@@ -18,7 +18,7 @@
 #define LED_GREEN_ON()    HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin,GPIO_PIN_RESET)
 #define LED_RED_ON()      HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin,GPIO_PIN_RESET)
 
-float auto_attack_yaw_kp = 0.3;
+float auto_attack_yaw_kp = 0.4;
 float auto_attack_pitch_kp = 0.001;
 float auto_attack_yaw_kd = 0.01;
 float auto_attack_pitch_kd = 0.0;
@@ -82,6 +82,8 @@ void ControlCMFR(void)
 
 void ControlBullet(void)
 {		
+	BulletSpeedPID.kp = 3.0;
+	BulletSpeedPID.kd = 0.0;
 	BulletSpeedPID.ref = bullet_ref*0.075;
 	BulletSpeedPID.ref = 160 * BulletSpeedPID.ref;	
 			
@@ -93,8 +95,9 @@ void ControlBullet(void)
 
 void ControlBullet2(void)
 {		
-	Bullet2SpeedPID.kp = 5.0;
+	Bullet2SpeedPID.kp = 3.0;
 	Bullet2SpeedPID.kd = 0.0;
+	if(bullet2_ref<300 && bullet2_ref>-300) bullet2_ref = 0;
 	Bullet2SpeedPID.ref = bullet2_ref*0.075;
 	Bullet2SpeedPID.ref = 160 * Bullet2SpeedPID.ref;	
 			
@@ -210,12 +213,12 @@ void WorkStateFSM(void)
 			}
 			else if (inputmode == AUTO)
 			{
-				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
-				if(frictionRamp.IsOverflow(&frictionRamp))
-				{
+				//SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				//if(frictionRamp.IsOverflow(&frictionRamp))
+				//{
 					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
-					FrictionWheelState = FRICTION_WHEEL_ON;
-				}
+				//	FrictionWheelState = FRICTION_WHEEL_ON;
+				//}
 			}
 			
 			if (blink_cnt == 1000) 
@@ -400,7 +403,7 @@ fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(6.5, 0.0, 0.0, 10000.0, 10000.0, 
 //fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(10.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 2000.0);
 #define yaw_zero 7200  //100
-#define pitch_zero 6875
+#define pitch_zero 1753
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
@@ -473,9 +476,9 @@ void controlLoop()
 	
 	if(WorkState != STOP_STATE) 
 	{
-		//ControlYawSpeed();
-		//ControlPitch();
-		//setGMMotor();
+		ControlYawSpeed();
+		ControlPitch();
+		setGMMotor();
 		
 		//ControlCMFL();
 		//ControlCMFR();
