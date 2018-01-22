@@ -431,6 +431,10 @@ float enemy_yaw_err = 0;
 float enemy_yaw_out = 0;
 float enemy_pitch_err = 0;
 float enemy_pitch_out = 0;
+
+uint16_t disturb_init = 0;
+uint16_t disturb_cnt = 0;
+float disturb_angle = 8000.0;
 //主控制循环
 void controlLoop()
 {
@@ -450,6 +454,25 @@ void controlLoop()
 	{
 		//yawSpeedTarget = 220.0;
 		yawSpeedTarget = 0;
+	}
+	
+	if(FrictionWheelState == FRICTION_WHEEL_ON)
+	{
+		if (disturb_init)
+		{
+			disturb_cnt++;
+			if(disturb_cnt > 2000)
+			{
+				bullet_angle_target = - bullet_angle_target;
+				disturb_cnt = 0;
+			}
+		}
+		else
+		{
+			disturb_init = 1;
+			bullet_angle_target = disturb_angle;
+			disturb_cnt = 0;
+		}
 	}
 	
 	if(WorkState == ATTACK_STATE)
@@ -485,7 +508,7 @@ void controlLoop()
 		ControlBullet();
 		ControlBullet2();
 		//setBulletWithAngle(bullet_angle_target + bullet_zero_angle);
-		//setBullet2WithAngle(bullet_angle_target + bullet_zero_angle);
+		//setBullet2WithAngle(bullet2_angle_target + bullet2_zero_angle);
 		setCMMotor();
 	}
 }

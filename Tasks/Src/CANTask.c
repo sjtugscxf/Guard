@@ -18,14 +18,14 @@ Motor820RRxMsg_t CMFLRx,CMFRRx,BulletRx,Bullet2Rx;
 Motor6623RxMsg_t GMPITCHRx,GMYAWRx;
 
 uint8_t can1_update = 1;
-uint8_t can1_type = 1;
+uint8_t can1_type = 0;
 /********************CAN发送*****************************/
 //云台底盘CAN数据依次发送保证发送资源正常
 void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
 {
 	if(hcan == &CMGMMOTOR_CAN){
 		can1_update = 1;
-		can1_type = 1 - can1_type; //哨兵目前没有顶盘，先控制云台
+		can1_type = 1 - can1_type; 
 	}
 }
 
