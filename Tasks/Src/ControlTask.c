@@ -254,7 +254,17 @@ void WorkStateFSM(void)
 		}break;
 		case ATTACK_STATE:  //自动打击模式
 		{
-			if (find_enemy == 0) WorkState = DEFEND_STATE;
+			static int enemy_lost = 0;
+			if (find_enemy == 0) 
+			{
+				enemy_lost++;
+				if (enemy_lost > 100) 
+				{
+					WorkState = DEFEND_STATE;
+					enemy_lost = 0;
+				}
+			}
+			else enemy_lost = 0;
 			
 			if (inputmode == STOP) 
 			{
@@ -403,7 +413,7 @@ fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(6.5, 0.0, 0.0, 10000.0, 10000.0, 
 //fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(10.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 2000.0);
 #define yaw_zero 7200  //100
-#define pitch_zero 1753
+#define pitch_zero 3100
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
@@ -422,9 +432,9 @@ void ControlPitch(void)
 	pitchRealAngle = -(GMPITCHRx.angle - pitchZeroAngle) * 360 / 8192.0;
 	NORMALIZE_ANGLE180(pitchRealAngle);
 
-	MINMAX(pitchAngleTarget, -10.0f, 25);
+	MINMAX(pitchAngleTarget, -10.0f, 50);
 				
-	pitchIntensity = ProcessPitchPID(pitchAngleTarget,pitchRealAngle,gYroYs);
+	pitchIntensity = -ProcessPitchPID(pitchAngleTarget,pitchRealAngle,gYroYs);
 }
 
 float enemy_yaw_err = 0;
@@ -452,8 +462,8 @@ void controlLoop()
 	
 	if(WorkState == DEFEND_STATE)
 	{
-		//yawSpeedTarget = 220.0;
-		yawSpeedTarget = 0;
+		yawSpeedTarget = 80.0;
+		//yawSpeedTarget = 0;
 	}
 	
 	if(FrictionWheelState == FRICTION_WHEEL_ON)
