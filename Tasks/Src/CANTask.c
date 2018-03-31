@@ -19,6 +19,9 @@ Motor6623RxMsg_t GMPITCHRx,GMYAWRx;
 
 uint8_t can1_update = 1;
 uint8_t can1_type = 0;
+
+uint8_t testrecv1 = 0x00;
+uint8_t testrecv2 = 0x00;
 /********************CAN发送*****************************/
 //云台底盘CAN数据依次发送保证发送资源正常
 void HAL_CAN_TxCpltCallback(CAN_HandleTypeDef* hcan)
@@ -82,6 +85,10 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan){
 				GMPITCHRx.angle = CanRxGetU16(CMGMCanRxMsg, 0);
 				GMPITCHRx.realIntensity = CanRxGetU16(CMGMCanRxMsg, 1);
 				GMPITCHRx.giveIntensity = CanRxGetU16(CMGMCanRxMsg, 2);
+				break;
+			case UPMSG_RXID:
+				testrecv1 = CMGMCanRxMsg.Data[0];
+			  testrecv2 = CMGMCanRxMsg.Data[4];
 				break;
 			default:
 			Error_Handler();

@@ -25,6 +25,8 @@
 #define GMYAW_RXID 0x206u
 #define GMPITCH_RXID 0x205u
 
+#define UPMSG_RXID 0x301u
+
 //TxID
 #define CM_TXID 0x200u
 #define GM_TXID 0x1FFu
