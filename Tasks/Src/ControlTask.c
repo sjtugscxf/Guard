@@ -27,7 +27,7 @@ uint8_t on_enemy = 0;
 uint16_t enemy_yaw = YAW_OFFSET;
 uint16_t enemy_pitch = PITCH_OFFSET;
 uint16_t enemy_detect_cnt = 0;
-WorkState_e WorkState = PREPARE_STATE;
+WorkState_e WorkState = START_STATE;
 uint16_t prepare_time = 0;
 
 PID_Regulator_t CMRotatePID = CHASSIS_MOTOR_ROTATE_PID_DEFAULT; 
@@ -60,7 +60,7 @@ void CMControlInit(void)
 //单个底盘电机的控制，下同
 void ControlCMFL(void)
 {		
-	CM1SpeedPID.ref =  ChassisSpeedRef.forward_back_ref*0.075;
+	CM1SpeedPID.ref =  ChassisSpeedRef.forward_back_ref*0.075+ ChassisSpeedRef.left_right_ref*0.075;
 	CM1SpeedPID.ref = 160 * CM1SpeedPID.ref;	
 			
 	CM1SpeedPID.fdb = CMFLRx.RotateSpeed;
@@ -71,7 +71,7 @@ void ControlCMFL(void)
 
 void ControlCMFR(void)
 {		
-	CM2SpeedPID.ref = - ChassisSpeedRef.forward_back_ref*0.075;
+	CM2SpeedPID.ref = - ChassisSpeedRef.forward_back_ref*0.075 + ChassisSpeedRef.left_right_ref*0.075;
 	CM2SpeedPID.ref = 160 * CM2SpeedPID.ref;	
 			
 	CM2SpeedPID.fdb = CMFRRx.RotateSpeed;
@@ -178,6 +178,23 @@ void setBullet2WithAngle(double targetAngle){//360.0 * 12 * 2
 		Bullet2SpeedPID.Calc(&Bullet2SpeedPID);
 		Bullet2Intensity = Bullet2SpeedPID.output;
 }
+
+float odometry = 0.0;
+float odometry_fact = 0.01;
+float odometry_upmax1 = 60000.0;
+float odometry_downmax1 = -60000.0;
+float odometry_speed1 = 30.0;
+float odometry_upmax2 = 10000.0;
+float odometry_downmax2 = -10000.0;
+float odometry_speed2 = 15.0;
+void odometryLoop()
+{
+	if((CMFLRx.RotateSpeed > 50 || CMFLRx.RotateSpeed < -50) && (CMFRRx.RotateSpeed > 50 || CMFRRx.RotateSpeed < -50))
+	{
+		odometry += (CMFLRx.RotateSpeed - CMFRRx.RotateSpeed) * odometry_fact;
+	}
+}
+
 extern FrictionWheelState_e FrictionWheelState;
 extern Shoot_State_e ShootState;
 //状态机切换
@@ -187,10 +204,19 @@ void WorkStateFSM(void)
 	blink_cnt++;
 	switch (WorkState)
 	{
-		case PREPARE_STATE:
+		case START_STATE:
 		{
 			if(prepare_time<2000) prepare_time++;
 			if(prepare_time == 2000)//开机两秒进入正常模式
+			{
+				WorkState = PREPARE_STATE;
+			}
+			if (inputmode == STOP) WorkState = STOP_STATE;
+		}break;
+		case PREPARE_STATE:
+		{
+			if(prepare_time<4000) prepare_time++;
+			if(prepare_time == 4000)//开机两秒进入正常模式
 			{
 				WorkState = NORMAL_STATE;
 				prepare_time = 0;
@@ -217,6 +243,8 @@ void WorkStateFSM(void)
 				//if(frictionRamp.IsOverflow(&frictionRamp))
 				//{
 					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
+				  odometry = 0.0;
+					ChassisSpeedRef.forward_back_ref = odometry_speed1;
 				//	FrictionWheelState = FRICTION_WHEEL_ON;
 				//}
 			}
@@ -310,15 +338,17 @@ void setCMMotor()
 	CMGMMOTOR_CAN.pTxMsg->RTR = CAN_RTR_DATA;
 	CMGMMOTOR_CAN.pTxMsg->DLC = 0x08;
 	
-	CMGMMOTOR_CAN.pTxMsg->Data[0] = 0x00;
-	CMGMMOTOR_CAN.pTxMsg->Data[1] = 0x00;
-	CMGMMOTOR_CAN.pTxMsg->Data[2] = 0x00;
-	CMGMMOTOR_CAN.pTxMsg->Data[3] = 0x00;
+	CMGMMOTOR_CAN.pTxMsg->Data[0] = (uint8_t)(CMFLIntensity >> 8);
+	CMGMMOTOR_CAN.pTxMsg->Data[1] = (uint8_t)CMFLIntensity;
+	CMGMMOTOR_CAN.pTxMsg->Data[2] = (uint8_t)(CMFRIntensity >> 8);
+	CMGMMOTOR_CAN.pTxMsg->Data[3] = (uint8_t)CMFRIntensity;
+	//CMGMMOTOR_CAN.pTxMsg->Data[2] = 0;
+	//CMGMMOTOR_CAN.pTxMsg->Data[3] = 0;
 	CMGMMOTOR_CAN.pTxMsg->Data[4] = (uint8_t)(BulletIntensity >> 8);
 	CMGMMOTOR_CAN.pTxMsg->Data[5] = (uint8_t)BulletIntensity;
 	CMGMMOTOR_CAN.pTxMsg->Data[6] = (uint8_t)(Bullet2Intensity >> 8);
 	CMGMMOTOR_CAN.pTxMsg->Data[7] = (uint8_t)Bullet2Intensity;
-
+	
 	if(can1_update == 1 && can1_type == 0)
 	{
 		//CAN通信前关中断
@@ -464,6 +494,8 @@ void controlLoop()
 	{
 		yawSpeedTarget = 80.0;
 		//yawSpeedTarget = 0;
+		if(odometry < odometry_downmax1) ChassisSpeedRef.forward_back_ref = odometry_speed1;
+		if(odometry > odometry_upmax1) ChassisSpeedRef.forward_back_ref = -odometry_speed1;
 	}
 	
 	if(FrictionWheelState == FRICTION_WHEEL_ON)
@@ -487,6 +519,9 @@ void controlLoop()
 	
 	if(WorkState == ATTACK_STATE)
 	{
+	  if(odometry < odometry_downmax2) ChassisSpeedRef.forward_back_ref = odometry_speed2;
+		if(odometry > odometry_upmax2) ChassisSpeedRef.forward_back_ref = -odometry_speed2;
+		
 		static float enemy_yaw_err_last = 0;
 		enemy_yaw_err = (float)((int16_t)YAW_OFFSET - enemy_yaw);
 		//enemy_yaw_out = enemy_yaw_err/10 * fabs(enemy_yaw_err)  * AUTO_ATTACK_YAW_KP + (enemy_yaw_err - enemy_yaw_err_last)*AUTO_ATTACK_YAW_KD;
@@ -507,19 +542,21 @@ void controlLoop()
 		else ShootState = NOSHOOTING;
 	}
 	
-	if(WorkState != STOP_STATE && WorkState != PREPARE_STATE) 
+	if(WorkState != STOP_STATE && WorkState != START_STATE) 
 	{
+		odometryLoop();
+		
 		ControlYawSpeed();
 		ControlPitch();
-		//setGMMotor();
+		setGMMotor();
 		
-		//ControlCMFL();
-		//ControlCMFR();
+		ControlCMFL();
+		ControlCMFR();
 		ControlBullet();
 		ControlBullet2();
 		//setBulletWithAngle(bullet_angle_target + bullet_zero_angle);
 		//setBullet2WithAngle(bullet2_angle_target + bullet2_zero_angle);
-		//setCMMotor();
+		setCMMotor();
 	}
 }
 

@@ -115,6 +115,7 @@
 
 typedef enum
 {
+	START_STATE,
 	PREPARE_STATE,     	
 	NORMAL_STATE,		  
   DEFEND_STATE,
