@@ -15,9 +15,9 @@
 #include "includes.h"
 
 #define RC_UART huart1
-#define MANIFOLD_UART huart3
-#define CTRL_UART huart6
-#define JUDGE_UART huart6
+#define MANIFOLD_UART huart6
+#define CTRL_UART huart3
+#define JUDGE_UART huart3
 
 #define STICK_TO_CHASSIS_SPEED_REF_FACT     0.45f
 #define STICK_TO_BULLET_POSITION_REF_FACT   0.3f

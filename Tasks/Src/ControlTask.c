@@ -181,9 +181,9 @@ void setBullet2WithAngle(double targetAngle){//360.0 * 12 * 2
 
 float odometry = 0.0;
 float odometry_fact = 0.01;
-float odometry_upmax1 = 60000.0;
-float odometry_downmax1 = -60000.0;
-float odometry_speed1 = 30.0;
+float odometry_upmax1 = 80000.0;
+float odometry_downmax1 = -80000.0;
+float odometry_speed1 = 50.0;
 float odometry_upmax2 = 10000.0;
 float odometry_downmax2 = -10000.0;
 float odometry_speed2 = 15.0;
@@ -243,8 +243,8 @@ void WorkStateFSM(void)
 				//if(frictionRamp.IsOverflow(&frictionRamp))
 				//{
 					WorkState = DEFEND_STATE;//防御模式开启摩擦轮
-				  odometry = 0.0;
-					ChassisSpeedRef.forward_back_ref = odometry_speed1;
+				  //odometry = 0.0;
+					//ChassisSpeedRef.forward_back_ref = odometry_speed1;
 				//	FrictionWheelState = FRICTION_WHEEL_ON;
 				//}
 			}
@@ -289,6 +289,7 @@ void WorkStateFSM(void)
 				if (enemy_lost > 100) 
 				{
 					WorkState = DEFEND_STATE;
+					ChassisSpeedRef.forward_back_ref = odometry_speed1;
 					enemy_lost = 0;
 				}
 			}
@@ -443,7 +444,7 @@ fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(6.5, 0.0, 0.0, 10000.0, 10000.0, 
 //fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(10.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 2000.0);
 #define yaw_zero 7200  //100
-#define pitch_zero 3100
+#define pitch_zero 3043
 float yawRealAngle = 0.0;
 float pitchRealAngle = 0.0;
 float gap_angle = 0.0;
@@ -462,7 +463,7 @@ void ControlPitch(void)
 	pitchRealAngle = -(GMPITCHRx.angle - pitchZeroAngle) * 360 / 8192.0;
 	NORMALIZE_ANGLE180(pitchRealAngle);
 
-	MINMAX(pitchAngleTarget, -10.0f, 50);
+	MINMAX(pitchAngleTarget, -18.0f, 30);
 				
 	pitchIntensity = -ProcessPitchPID(pitchAngleTarget,pitchRealAngle,gYroYs);
 }
@@ -492,10 +493,10 @@ void controlLoop()
 	
 	if(WorkState == DEFEND_STATE)
 	{
-		yawSpeedTarget = 80.0;
+		yawSpeedTarget = 120.0;
 		//yawSpeedTarget = 0;
-		if(odometry < odometry_downmax1) ChassisSpeedRef.forward_back_ref = odometry_speed1;
-		if(odometry > odometry_upmax1) ChassisSpeedRef.forward_back_ref = -odometry_speed1;
+		//if(odometry < odometry_downmax1) ChassisSpeedRef.forward_back_ref = odometry_speed1;
+		//if(odometry > odometry_upmax1) ChassisSpeedRef.forward_back_ref = -odometry_speed1;
 	}
 	
 	if(FrictionWheelState == FRICTION_WHEEL_ON)
@@ -519,8 +520,9 @@ void controlLoop()
 	
 	if(WorkState == ATTACK_STATE)
 	{
-	  if(odometry < odometry_downmax2) ChassisSpeedRef.forward_back_ref = odometry_speed2;
-		if(odometry > odometry_upmax2) ChassisSpeedRef.forward_back_ref = -odometry_speed2;
+	  //if(odometry < odometry_downmax2) ChassisSpeedRef.forward_back_ref = odometry_speed2;
+		//if(odometry > odometry_upmax2) ChassisSpeedRef.forward_back_ref = -odometry_speed2;
+		ChassisSpeedRef.forward_back_ref = 0.0;
 		
 		static float enemy_yaw_err_last = 0;
 		enemy_yaw_err = (float)((int16_t)YAW_OFFSET - enemy_yaw);
@@ -548,12 +550,15 @@ void controlLoop()
 		
 		ControlYawSpeed();
 		ControlPitch();
+		
+		//pitchIntensity = 0;
+		
 		setGMMotor();
 		
 		ControlCMFL();
 		ControlCMFR();
 		ControlBullet();
-		ControlBullet2();
+		//ControlBullet2();
 		//setBulletWithAngle(bullet_angle_target + bullet_zero_angle);
 		//setBullet2WithAngle(bullet2_angle_target + bullet2_zero_angle);
 		setCMMotor();

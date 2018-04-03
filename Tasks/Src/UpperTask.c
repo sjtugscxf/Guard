@@ -23,19 +23,19 @@ void zykReceiveData(uint8_t data);
 void ctrlUartRxCpltCallback()
 {
 	zykReceiveData(data);
-	HAL_UART_AbortReceive((&CTRL_UART));
-	if(HAL_UART_Receive_DMA(&CTRL_UART, &data, 1) != HAL_OK)
-	{
-		Error_Handler();
-		printf( "CtrlUart error" );
-	} 
+//	HAL_UART_AbortReceive((&CTRL_UART));
+//	if(HAL_UART_Receive_DMA(&CTRL_UART, &data, 1) != HAL_OK)
+//	{
+//		Error_Handler();
+//		printf( "CtrlUart error" );
+//	} 
 }
 
 void ctrlUartInit(){
-	if(HAL_UART_Receive_DMA(&CTRL_UART, &data, 1) != HAL_OK){
-		Error_Handler();
-		printf( "InitCtrlUart error" );
-	} 
+//	if(HAL_UART_Receive_DMA(&CTRL_UART, &data, 1) != HAL_OK){
+//		Error_Handler();
+//		printf( "InitCtrlUart error" );
+//	} 
 }
 
 void zykReceiveData(uint8_t data)

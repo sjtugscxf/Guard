@@ -117,9 +117,9 @@ uint32_t myVerify_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
 
 uint8_t tmp_judge;
 void InitJudgeUart(void){
-	if(HAL_UART_Receive_DMA(&JUDGE_UART, &tmp_judge, 1) != HAL_OK){
-			Error_Handler();
-	}
+//	if(HAL_UART_Receive_DMA(&JUDGE_UART, &tmp_judge, 1) != HAL_OK){
+//			Error_Handler();
+//	}
 }
 uint8_t receiving = 0;
 uint8_t received = 0;
@@ -161,10 +161,10 @@ void judgeUartRxCpltCallback(void)
 			buffercnt++;
 		}
 	}
-	if(HAL_UART_Receive_DMA(&JUDGE_UART, &tmp_judge, 1) != HAL_OK)
-	{
-		Error_Handler();
-	}
+	//if(HAL_UART_Receive_DMA(&JUDGE_UART, &tmp_judge, 1) != HAL_OK)
+	//{
+	//	Error_Handler();
+	//}
 }
 
 tGameInfo mytGameInfo;
